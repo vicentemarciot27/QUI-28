@@ -10,15 +10,11 @@ def obter_resposta_sim_nao(pergunta):
             print("Resposta inválida. Por favor, responda com 'Sim' ou 'Não'.")
 
 
-# Pergunta o nome da variável 1
-nome_variavel1 = input("Qual o nome da variável 1? ")
+nome_variavel1 = "jose"
 
-# Pergunta a quantidade no teste central da variável 1
 quantidade_variavel1 = input("Qual a sua quantidade no teste central? ")
 
-# Verifica se a resposta anterior é um número inteiro
 if quantidade_variavel1.isdigit():
-    # Pergunta se ela precisa ser um número inteiro
     resposta_inteiro = obter_resposta_sim_nao("Ela precisa ser um número inteiro? (Sim/Não) ")
     if resposta_inteiro:
         quantidade_variavel1 = int(quantidade_variavel1)
