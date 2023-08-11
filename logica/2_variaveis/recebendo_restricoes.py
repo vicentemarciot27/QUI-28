@@ -1,5 +1,5 @@
 def obter_resposta_sim_nao(pergunta):
-    while True:
+    while True: 
         resposta = input(pergunta)
         resposta = resposta.lower()
         if resposta == "sim" or resposta == "s":
@@ -10,29 +10,47 @@ def obter_resposta_sim_nao(pergunta):
             print("Resposta inválida. Por favor, responda com 'Sim' ou 'Não'.")
 
 
-nome_variavel1 = "jose"
+# Pergunta o nome da variável 1
+nome_variavel_1 = input("Qual o nome da variável 1? ")
 
-quantidade_variavel1 = input("Qual a sua quantidade no teste central? ")
+# Pergunta a quantidade no teste central da variável 1
+quantidade_variavel_1 = input("Qual a sua quantidade/valor no teste central? (apenas o valor numerico) ")
 
-if quantidade_variavel1.isdigit():
+# Pergunta sobre o tipo da variável
+unidade_variavel_1 = input("Qual a unidade da variável? ")
+
+
+# conversão de string para numero
+if quantidade_variavel_1.isdigit():
+    # Pergunta se ela precisa ser um número inteiro, se for vai ter a restricao_inteiro_1 =1
+    quantidade_variavel_1 = float(quantidade_variavel_1)
     resposta_inteiro = obter_resposta_sim_nao("Ela precisa ser um número inteiro? (Sim/Não) ")
     if resposta_inteiro:
-        quantidade_variavel1 = int(quantidade_variavel1)
+        restricao_inteiro_1 = 1
+else:
+    quantidade_variavel_1 = quantidade_variavel_1 = float(quantidade_variavel_1.replace(',','.'))
+        
 
 # Pergunta o nome da variável 2
-nome_variavel2 = input("Qual o nome da variável 2? ")
+nome_variavel_2 = input("Qual o nome da variável 2? ")
 
 # Pergunta a quantidade no teste central da variável 2
-quantidade_variavel2 = input("Qual a sua quantidade no teste central? ")
+quantidade_variavel_2 = input("Qual a sua quantidade no teste central? (apenas o valor numerico) ")
 
-# Verifica se a resposta anterior é um número inteiro
-if quantidade_variavel2.isdigit():
-    # Pergunta se ela precisa ser um número inteiro
+# Pergunta sobre o tipo da variável
+unidade_variavel_2 = input("Qual a unidade da variável? ")
+
+# conversão de string para numero
+if quantidade_variavel_2.isdigit():
+    # Pergunta se ela precisa ser um número inteiro, se for vai ter a restricao_inteiro_2 =1
+    quantidade_variavel_2 = float(quantidade_variavel_2)
     resposta_inteiro = obter_resposta_sim_nao("Ela precisa ser um número inteiro? (Sim/Não) ")
     if resposta_inteiro:
-        quantidade_variavel2 = int(quantidade_variavel2)
+        restricao_inteiro_2 = 1
+else:
+    quantidade_variavel_2 = quantidade_variavel_2 = float(quantidade_variavel_1.replace(',','.'))
 
 # Impressão dos valores obtidos
 print("Valores obtidos:")
-print("Variável 1: ", nome_variavel1, ", Quantidade no teste central: ", quantidade_variavel1)
-print("Variável 2: ", nome_variavel2, ", Quantidade no teste central: ", quantidade_variavel2)
+print("Variável 1: ", nome_variavel_1, ", Quantidade no teste central: ", quantidade_variavel_1, unidade_variavel_1)
+print("Variável 2: ", nome_variavel_2, ", Quantidade no teste central: ", quantidade_variavel_2, unidade_variavel_2)
