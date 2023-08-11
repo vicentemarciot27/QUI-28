@@ -31,6 +31,9 @@ if quantidade_variavel_1.isdigit():
         restricao_inteiro_1 = 1
 else:
     quantidade_variavel_1 = float(quantidade_variavel_1.replace(',','.'))
+
+limite_superior_1 = input("Qual o máximo valor para essa variavel?")
+limite_inferior_1 = input("Qual o minimo valor para essa variavel?")
         
 
 # Pergunta o nome da variável 2
@@ -51,6 +54,11 @@ if quantidade_variavel_2.isdigit():
         restricao_inteiro_2 = 1
 else:
     quantidade_variavel_2 = float(quantidade_variavel_1.replace(',','.'))
+
+limite_superior_2 = input("Qual o máximo valor para essa variavel?")
+limite_inferior_2 = input("Qual o minimo valor para essa variavel?")
+
+delta = input("Qual o delta desejado para o experimento?")
 
 # Impressão dos valores obtidos
 print("Valores obtidos:")

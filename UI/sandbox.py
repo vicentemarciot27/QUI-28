@@ -9,7 +9,7 @@ class Resposta:
 
 
 def send(resposta):
-    ans = int(nvariaveis.get()) * 3
+    ans = int(nvariaveis.get()) * 2
     resposta.text = ctk.CTkLabel(app, text="O dobro é " + str(ans))
     resposta.text.pack(pady=10)
     resposta.respondeu = True

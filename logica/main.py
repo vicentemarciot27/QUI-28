@@ -44,7 +44,7 @@ ax.plot_surface(x_mesh, y_mesh, z_mesh, cmap='viridis')
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
-ax.set_title('3D Surface Plot with Quadratic Model')
+ax.set_title('Teste criação gráfico 3D ')
 
 # Show the plot
 plt.show()
