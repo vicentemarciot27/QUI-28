@@ -1,14 +1,15 @@
 import math
 
 class variable:
-    def __init__(self, name, center, delta, upper_limit, lower_limit, is_integer):
+    def __init__(self, name, center, unit, is_integer, upper_limit, lower_limit, delta):
         self.name = name
         self.center = center
-        self.delta = delta
+        self.unit = unit 
+        self.is_integer = is_integer
         self.upper_limit = upper_limit
         self.lower_limit = lower_limit
-        self.is_integer = is_integer
-    
+        self.delta = delta
+        
     def code(self, value):
         return (value-self.center)/self.delta
     
