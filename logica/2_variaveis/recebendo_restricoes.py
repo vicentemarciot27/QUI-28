@@ -12,7 +12,6 @@ def obter_resposta_sim_nao(pergunta):
 restricao_inteiro_1 = 0
 restricao_inteiro_2 = 0
 
-
 # Pergunta o nome da variável 1
 nome_variavel_1 = input("Qual o nome da variável 1? ")
 
