@@ -9,6 +9,9 @@ def obter_resposta_sim_nao(pergunta):
         else:
             print("Resposta inválida. Por favor, responda com 'Sim' ou 'Não'.")
 
+restricao_inteiro_1 = 0
+restricao_inteiro_2 = 0
+
 
 # Pergunta o nome da variável 1
 nome_variavel_1 = input("Qual o nome da variável 1? ")
@@ -28,7 +31,7 @@ if quantidade_variavel_1.isdigit():
     if resposta_inteiro:
         restricao_inteiro_1 = 1
 else:
-    quantidade_variavel_1 = quantidade_variavel_1 = float(quantidade_variavel_1.replace(',','.'))
+    quantidade_variavel_1 = float(quantidade_variavel_1.replace(',','.'))
         
 
 # Pergunta o nome da variável 2
@@ -48,7 +51,7 @@ if quantidade_variavel_2.isdigit():
     if resposta_inteiro:
         restricao_inteiro_2 = 1
 else:
-    quantidade_variavel_2 = quantidade_variavel_2 = float(quantidade_variavel_1.replace(',','.'))
+    quantidade_variavel_2 = float(quantidade_variavel_1.replace(',','.'))
 
 # Impressão dos valores obtidos
 print("Valores obtidos:")

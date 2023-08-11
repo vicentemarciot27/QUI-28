@@ -1,5 +1,5 @@
-def teste(nome_variavel_1, quantidade_variavel_1, unidade_variavel_1,
-                                  nome_variavel_2, quantidade_variavel_2, unidade_variavel_2):
+def teste(nome_variavel_1, quantidade_variavel_1, unidade_variavel_1, restricao_inteiro_1,
+                                  nome_variavel_2, quantidade_variavel_2, unidade_variavel_2, restricao_inteiro_2):
     quantidade_variavel_1 = quantidade_variavel_1 * 2
     quantidade_variavel_2 = quantidade_variavel_2 * 2
 
@@ -9,8 +9,8 @@ def teste(nome_variavel_1, quantidade_variavel_1, unidade_variavel_1,
 
 
 if __name__ == "__main__":
-    from recebendo_restricoes import nome_variavel_1, quantidade_variavel_1, unidade_variavel_1
-    from recebendo_restricoes import nome_variavel_2, quantidade_variavel_2, unidade_variavel_2
+    from recebendo_restricoes import nome_variavel_1, quantidade_variavel_1, unidade_variavel_1, restricao_inteiro_1
+    from recebendo_restricoes import nome_variavel_2, quantidade_variavel_2, unidade_variavel_2, restricao_inteiro_2
 
-    teste(nome_variavel_1, quantidade_variavel_1, unidade_variavel_1,
-                                  nome_variavel_2, quantidade_variavel_2, unidade_variavel_2)
+    teste(nome_variavel_1, quantidade_variavel_1, unidade_variavel_1, restricao_inteiro_1,
+                                  nome_variavel_2, quantidade_variavel_2, unidade_variavel_2, restricao_inteiro_2)
