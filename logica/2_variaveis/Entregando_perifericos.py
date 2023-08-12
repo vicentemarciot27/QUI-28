@@ -26,8 +26,8 @@ class fatorial_plan: #planejamento fatorial
         self.dimensions = number_of_paramters
         self.alpha = alpha
 
-        self.central = list(combination_with_replacement([0], number_of_paramters))
-        self.fatorial = list(combination_with_replacement([-1, 1], number_of_paramters))
+        self.central = list(combinations_with_replacement([0], number_of_paramters))
+        self.fatorial = list(combinations_with_replacement([-1, 1], number_of_paramters))
         self.axial = []
 
         for i in range(number_of_paramters):
@@ -37,3 +37,14 @@ class fatorial_plan: #planejamento fatorial
                     self.axial[i].append(self.alpha)
                 else:
                     self.axial[i].append(0)
+    
+def return_plan(paramters_list, fatorial_plan_list):
+    real_plan = []
+
+    for i in range(fatorial_plan_list):
+        real_plan.append([])
+
+        for j in range(paramters_list):
+            real_plan[i].append(paramters_list[j].decode(fatorial_plan_list[i][j]))
+
+    return real_plan
