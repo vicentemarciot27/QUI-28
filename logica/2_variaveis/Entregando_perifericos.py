@@ -11,7 +11,7 @@ class paramter: #parametros são as variaveis a serem analisadas
             center (float): defines the central point
             lower_limit (float): defines the lower limit
             upper_limit (float): defines the upper limit
-            delta (float): ?? adiciona aqui melman q eu nao sei estatistica
+            delta (float): required variation
         """
         self.name = name
         self.unit = unit
