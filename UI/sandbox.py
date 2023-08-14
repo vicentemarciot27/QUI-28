@@ -1,5 +1,10 @@
+# internal imports
+
+
+# external imports
 import tkinter as tk
 import customtkinter as ctk
+from components.slider import CustomSlider
 
 
 class Resposta:
@@ -16,18 +21,19 @@ def send(resposta):
 
 
 # System Settings
-ctk.set_appearance_mode("System")
+ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 # Our app Frame
 app = ctk.CTk()
 app.geometry("1024x576")
-# app.maxsize(width = 1024, height = 576)
+app.maxsize(width = 1024, height = 576)
+app.minsize(width = 1024, height = 576)
 app.title("C.H.A.S.S.I.")
 
 # Adding UI Elements
 title = ctk.CTkLabel(
-    app, text="Catalyst Hybrid And Single-propellant System" "design Interface"
+    app, text="Catalyst Hybrid And Single-propellant System design Interface"
 )
 title.pack(padx=20, pady=20)
 subtitle = ctk.CTkLabel(app, text="Insira o número de variáveis")
@@ -52,7 +58,11 @@ def nova_tela():
 btn_novatela = ctk.CTkButton(app, text="Nova Tela", command=nova_tela)
 btn_novatela.pack(pady=10)
 
-#
+# slider
+slider_variaveis = CustomSlider()
+slider_variaveis.on_slider_change(2)
+slider_variaveis.pack(padx=20, pady=20)
+
 
 # Run App
 app.mainloop()
