@@ -1,6 +1,6 @@
 import itertools
 
-class paramter: #parametros são as variaveis a serem analisadas
+class parameter: #parametros são as variaveis a serem analisadas
     def __init__(self, name, unit, is_integer, center, lower_limit, upper_limit, delta): #name e unit é str, is_integer é bool, e o resto é float
         """Defines the parameters (variables) to be analysed
 
@@ -44,58 +44,68 @@ class paramter: #parametros são as variaveis a serem analisadas
         return (value*self.delta)+self.center
 
 class point: #um ponto experimental
-    def __init__ (self, number_of_paramters):
+    def __init__ (self, number_of_parameters):
         """Defines the experimental point
 
         Args:
             number_of_paramters (int): The number of parameters (variables) to be analysed
         """
-        self.dimensions = number_of_paramters
+        self.dimensions = number_of_parameters
         self.coordinates = []
 
 class fatorial_plan: #planejamento fatorial
-    def __init__(self, number_of_paramters, alpha):
+    def __init__(self, number_of_parameters, alpha):
         """Defines the fatorial planning
 
         Args:
              number_of_paramters (int): The number of parameters (variables) to be analysed
             alpha (float): ?? explica melman
         """
-        self.dimensions = number_of_paramters
+        self.dimensions = number_of_parameters
         self.alpha = alpha
 
-        self.central = list(itertools.combinations_with_replacement([0], number_of_paramters))
-        self.fatorial = list(itertools.combinations_with_replacement([-1, 1], number_of_paramters))
-        self.central = list(itertools.combinations_with_replacement([0], number_of_paramters))
-        self.fatorial = list(itertools.combinations_with_replacement([-1, 1], number_of_paramters))
+        self.central = list(itertools.combinations_with_replacement([0], number_of_parameters))
+        self.fatorial = list(itertools.combinations_with_replacement([-1, 1], number_of_parameters))
+        self.central = list(itertools.combinations_with_replacement([0], number_of_parameters))
+        self.fatorial = list(itertools.combinations_with_replacement([-1, 1], number_of_parameters))
         self.axial = []
 
-        for i in range(number_of_paramters):
+        for i in range(number_of_parameters):
             self.axial.append([])
-            for j in range(number_of_paramters):
+            for j in range(number_of_parameters):
                 if j==i:
                     self.axial[i].append(self.alpha)
                 else:
                     self.axial[i].append(0)
     
-def return_plan(paramters_list, fatorial_plan_list):
+def return_plan(parameters_list, fatorial_plan_list):
     """ Pratica nessa daqui :)
     Recomendo usar a extensão autodocstring para fazer essas documentações resenha
     Isso é bom pq todo projeto comercial precisa ser bem documentado
 
     Args:
-        paramters_list (_type_): _description_
-        fatorial_plan_list (_type_): _description_
+        parameters_list (list): _description_
+        fatorial_plan_list (list): _description_
 
     Returns:
-        _type_: _description_
+        list: a real plot
     """
     real_plan = []
 
-    for i in range(fatorial_plan_list):
+    for i in range(len(fatorial_plan_list)):
         real_plan.append([])
 
-        for j in range(paramters_list):
-            real_plan[i].append(paramters_list[j].decode(fatorial_plan_list[i][j]))
+        for j in range(len(parameters_list)):
+            real_plan[i].append(parameters_list[j].decode(fatorial_plan_list[i][j]))
 
     return real_plan
+
+# Exemplo de uso
+param1 = parameter("Temperature", "°C", False, 0, 0, 100, 1)
+param2 = parameter("Pressure", "kPa", False, 0, 50, 150, 1)
+
+parameters_list = [param1, param2]
+fatorial_plan_list = fatorial_plan(2, 1).fatorial  # Usando combinações fatoriais para exemplo
+
+real_plan = return_plan(parameters_list, fatorial_plan_list)
+print(real_plan)
