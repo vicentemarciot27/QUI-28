@@ -105,7 +105,8 @@ param2 = parameter("Pressure", "kPa", False, 0, 50, 150, 1)
 fatorial = fatorial_plan(2, math.sqrt(2))
 
 parameters_list = [param1, param2]
-fatorial_plan_list = fatorial_plan(2, 1).fatorial
+fatorial_plan_list = fatorial.fatorial
+
 
 real_plan = return_plan(parameters_list, fatorial_plan_list)
 print(real_plan)
