@@ -1,4 +1,5 @@
 import itertools
+import math
 
 class parameter: #parametros são as variaveis a serem analisadas
     def __init__(self, name, unit, is_integer, center, lower_limit, upper_limit, delta): #name e unit é str, is_integer é bool, e o resto é float
@@ -66,8 +67,6 @@ class fatorial_plan: #planejamento fatorial
 
         self.central = list(itertools.combinations_with_replacement([0], number_of_parameters))
         self.fatorial = list(itertools.combinations_with_replacement([-1, 1], number_of_parameters))
-        self.central = list(itertools.combinations_with_replacement([0], number_of_parameters))
-        self.fatorial = list(itertools.combinations_with_replacement([-1, 1], number_of_parameters))
         self.axial = []
 
         for i in range(number_of_parameters):
@@ -100,12 +99,13 @@ def return_plan(parameters_list, fatorial_plan_list):
 
     return real_plan
 
-# Exemplo de uso
+# teste
 param1 = parameter("Temperature", "°C", False, 0, 0, 100, 1)
 param2 = parameter("Pressure", "kPa", False, 0, 50, 150, 1)
+fatorial = fatorial_plan(2, math.sqrt(2))
 
 parameters_list = [param1, param2]
-fatorial_plan_list = fatorial_plan(2, 1).fatorial  # Usando combinações fatoriais para exemplo
+fatorial_plan_list = fatorial_plan(2, 1).fatorial
 
 real_plan = return_plan(parameters_list, fatorial_plan_list)
 print(real_plan)
