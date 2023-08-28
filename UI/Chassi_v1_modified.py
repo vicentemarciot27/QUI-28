@@ -1,6 +1,6 @@
 # internal imports
 from UI.common import open_docs
-from logica.duovar.Entregando_perifericos import * 
+from logica.duovar.testes import * 
 # from UI.pages.parametros import open_parametros
 # from UI.components.sidebar import Sidebar
 

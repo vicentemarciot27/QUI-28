@@ -21,16 +21,25 @@ class Parameter:
 
         if self.is_integer:
             if not(isinstance(self.center, int)):
-                print("O valor central inserido não foi um número inteiro. Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor central.")
+                print("O valor central inserido não foi um número inteiro."
+                      "Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor central.")
 
             if not(isinstance(self.lower_limit, int)):
-                print("O valor do limite inferior inserido não foi um número inteiro. Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor do limite inferior.")
+                print("O valor do limite inferior inserido não foi um número inteiro."
+                      "Como o parâmetro é um número inteiro, o mesmo deve ser válido"
+                      "para o valor do limite inferior.")
 
             if not(isinstance(self.upper_limit, int)):
-                print("O valor do limite superior inserido não foi um número inteiro. Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor do limite superior.")
+                print("O valor do limite superior inserido não foi um número inteiro."
+                      "Como o parâmetro é um número inteiro, o mesmo deve ser válido"
+                      "para o valor do limite superior.")
 
             if not(isinstance(self.delta, int)):
-                print("O valor de delta inserido não foi um número inteiro. Caso delta não seja inteiro, o planejamento experimental vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de delta.")
+                print("O valor de delta inserido não foi um número inteiro. Caso delta"
+                      "não seja inteiro, o planejamento experimental vai pedir que coordenadas"
+                      "não inteiras sejam analisadas. Como o parâmetro é um número inteiro,"
+                      "o mesmo deve ser válido para suas coordenadas,"
+                      "e portanto, para o valor de delta.")
     
     def encode(self, value):
         return (value - self.center) / self.delta
@@ -53,12 +62,18 @@ class FatorialPlan:
         self.has_integer = has_integer
 
         if self.has_integer and not(isinstance(self.alpha, int)):
-            print("O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha.")
+            print("O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro,"
+                  "o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas."
+                  "Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas,"
+                  "e portanto, para o valor de alpha.")
 
         if self.alpha < 1:
-            print("O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro.")
+            print("O valor de alpha inserido foi menor que 1. Dessa forma, os pontos"
+                  "axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro.")
         elif self.alpha > sqrt(self.dimensions):
-            print("O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância.")
+            print("O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados."
+                  "Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central,"
+                  "e portanto a analise dos resultados referentes a esses pontos podem perder relevância.")
 
         self.center = [0] * self.dimensions
 
