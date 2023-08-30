@@ -88,6 +88,8 @@ class FatorialPlan:
             axial_point[i] = alpha
             self.axial.append(axial_point)
         
+    return_center_info = "Este é o ponto central do planejamento fatorial. Ele assim é chamado pois o planejamento é construido em volta dele. Devem ser feitas de 3 a 5 repetições do experimento no ponto central, pois ele será importante para estimar a variância dos dados."
+
     def return_center(self):
         real_plan = []
 
@@ -95,6 +97,8 @@ class FatorialPlan:
             real_plan.append(self.parameters_list[i].decode(self.center[i]))
 
         return real_plan
+    
+    return_cubic_info = "Esses são os pontos cúbicos do planejamento fatorial. Eles assim são chamados pois no espaço de planejamento eles formam um quadrado (para 2 parâmetros), um cubo (para 3 parâmetros), ou um hypercubo (para mais de 3 parâmetros)."
     
     def return_cubic(self):
         real_plan = []
@@ -106,6 +110,8 @@ class FatorialPlan:
     
         return real_plan
 
+    return_axial_info = "Esses são os pontos axiais do planejamento fatorial. Eles assim são chamados pois ficam sobre os eixos do espaço de planejamento."
+    
     def return_axial(self):
         real_plan = []
 
@@ -115,15 +121,3 @@ class FatorialPlan:
                 real_plan[i].append(self.parameters_list[j].decode(self.axial[i][j]))
     
         return real_plan
-
-
-def return_plan(parameters_list, fatorial_plan_list): #Função desatualizada. Tirá-la posteriormente.
-    real_plan = []
-
-    for i in range(len(fatorial_plan_list)):
-        real_plan.append([])
-
-        for j in range(len(parameters_list)):
-            real_plan[i].append(parameters_list[j].decode(fatorial_plan_list[i][j]))
-
-    return real_plan
