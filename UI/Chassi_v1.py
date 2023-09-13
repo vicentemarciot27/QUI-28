@@ -108,6 +108,7 @@ class ParametrosPage(ctk.CTk):
         # Extended input section
         self.extended_input = ExtendedInput(self)
         self.extended_input.pack(pady=80)
+        
     
 def open_parametros():
     # Open the Parâmetros page
