@@ -3,6 +3,7 @@ from UI.common import open_docs
 from logica.duovar.Entregando_perifericos import *
 import math
 import numpy as np
+import pandas as pd
 
 # from UI.pages.parametros import open_parametros
 # from UI.components.sidebar import Sidebar
@@ -186,8 +187,113 @@ class WelcomePage(ctk.CTk):
         self.link_btn = ctk.CTkButton(
             self, text="Read the docs and get started", command=open_docs
         )
+        
         self.link_btn.pack(pady=20)
+        
+            
+class ModelagemInput(ctk.CTkFrame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        
+        self.num_vars_input_Label = ctk.CTkLabel(self, text="Número de variáveis\n do planejamento fatorial:").grid(row=0, column=0)
+        
+        self.num_vars_input = ctk.CTkEntry(self)
+        self.num_vars_input.insert(0, "2")
+        self.num_vars_input.grid(row=0, column=1)
+        
+        self.update_button = ctk.CTkButton(self, text="Update", command=self.update_entries)
+        self.update_button.grid(row=0, column=2)
+        
+        num_vars = 2
+        
+        num_points = 3 + 2**num_vars + num_vars
+        
+        self.entries = []
+        for i in range(num_points):
+            self.entries.append([])
+            for j in range(num_vars):
+                self.entries[i].append(ctk.CTkEntry(self))
+                self.entries[i][j].grid(row=i+2, column=j, padx=3, pady=3)
+                
+        # Instance variable to keep track of header labels
+        self.headers_labels = []
+        
+        # Labels for common headers
+        headers = ["Ponto", "Resultado"]
+        ctk.CTkLabel(self, text="Ponto").grid(row=1, column=0, padx=3, pady=3)
+        ctk.CTkLabel(self, text="Resultado").grid(row=1, column=num_vars, padx=3, pady=3)
+        
+        self.update_entries()
+        
+        # Add button to generate and display DataFrame
+        self.print_df_button = ctk.CTkButton(self, text="Print DataFrame", command=self.print_dataframe)
+        self.print_df_button.grid(row=2, column=num_vars+2)  # Adjust the grid position as needed
 
+        # Label to display the DataFrame
+        self.df_label = ctk.CTkLabel(self, text="")
+        self.df_label.grid(row=3, column=0, columnspan=num_vars+2)  # Adjust the grid position as needed
+
+        
+
+    def update_entries(self):
+        num_vars = int(self.num_vars_input.get())
+        num_points = 3 + 2**num_vars + num_vars
+    
+        # Remove old entries
+        for row in self.entries:
+            for entry in row:
+                entry.grid_forget()
+
+        # Forget old header labels
+        for label in self.headers_labels:
+            label.grid_forget()
+
+        # Clear the headers_labels list to prepare for new headers
+        self.headers_labels = []
+
+        default_value = 1
+        self.entries = []
+        for i in range(num_points):
+            self.entries.append([])
+            for j in range(num_vars+1):
+                default_value = f"{i}.{j}"
+                entry = ctk.CTkEntry(self)
+                entry.insert(0, default_value)
+                entry.grid(row=i+2, column=j, padx=3, pady=3)
+                self.entries[i].append(entry)
+    
+        # Labels for common headers
+        label_ponto = ctk.CTkLabel(self, text="Ponto")
+        label_ponto.grid(row=1, column=0, padx=3, pady=3)
+        self.headers_labels.append(label_ponto)
+
+        label_resultado = ctk.CTkLabel(self, text="Resultado")
+        label_resultado.grid(row=1, column=num_vars, padx=3, pady=3)
+        self.headers_labels.append(label_resultado)
+    
+    def to_dataframe(self):
+        num_vars = int(self.num_vars_input.get())
+    
+        # Prepare the column names
+        columns = [f'Coordinate_{i}' for i in range(1, num_vars+1)] + ['Resultado']
+
+        data = []
+
+        for row in self.entries:
+            # For each row of entries, extract the values and append to data
+            row_data = [entry.get() for entry in row]
+            data.append(row_data)
+
+        df = pd.DataFrame(data, columns=columns)
+        return df
+    
+    def print_dataframe(self):
+        df = self.to_dataframe()
+        # Convert the DataFrame to a string and set the label text
+        self.df_label.configure(text=df.to_string())
+    
+
+        
 
 class ModelagemPage(ctk.CTk):
     def __init__(self, *args, **kwargs):
@@ -197,7 +303,7 @@ class ModelagemPage(ctk.CTk):
         self.sidebar = Sidebar(self)
 
         # Extended input section
-        self.extended_input = ExtendedInput(self)
+        self.extended_input = ModelagemInput(self)
         self.extended_input.pack(pady=80)
 
 
