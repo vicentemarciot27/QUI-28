@@ -119,21 +119,23 @@ class FatorialPlan: #classe do planejamento fatorial
 class FatorialPlanTests: #classe para testar o alfa
     def __init__(self, fatorial_plan):
         self.fatorial_plan = fatorial_plan
-        self.return_erro = []
+        self.return_error = []
 
     def tests(self): #testa o alfa
         if self.fatorial_plan.has_integer and not(isinstance(self.fatorial_plan.alpha, int)):
-            self.return_erro.append("O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha.")
+            self.return_error.append("O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha.")
         
         if self.fatorial_plan.alpha < 1:
-            self.return_erro.append("O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro.")
+            self.return_error.append("O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro.")
         
         if self.fatorial_plan.alpha > sqrt(self.fatorial_plan.dimensions):
-            self.return_erro.append("O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância.") 
+            self.return_error.append("O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância.") 
         
         for i in range(len(self.fatorial_plan.parameter)):
             if self.fatorial_plan.alpha > self.fatorial_plan.parameter[i].code(self.fatorial_plan.parameter[i].upper_limit):
-                self.return_erro.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {self.fatorial_plan.parameters[i].name}, para que o valor codificado do limite superior de {self.fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
+                self.return_error.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {self.fatorial_plan.parameters[i].name}, para que o valor codificado do limite superior de {self.fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
 
             if self.fatorial_plan.alpha > -self.fatorial_plan.parameter[i].code(self.fatorial_plan.parameter[i].lower_limit):
-                    self.return_erro.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {self.fatorial_plan.parameters[i].name}, para que o valor codificado do limite inferior de {self.fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
+                    self.return_error.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {self.fatorial_plan.parameters[i].name}, para que o valor codificado do limite inferior de {self.fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
+        
+        return self.return_error
