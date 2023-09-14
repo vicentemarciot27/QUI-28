@@ -2,21 +2,10 @@ from math import sqrt
 from itertools import product
 import numpy as np
 
-
-class Parameter:  # classe dos parâmetros
-    name_prompt = "Informe o nome do parâmetro que será estudado (e.g. Temperatura, Massa, Molaridade do Soluto, etc)."
-    unit_prompt = (
-        "Informe as unidades o parâmetro que será estudado (e.g. °C, Kg, mol/L, etc)."
-    )
-    is_integer_prompt = "Informe se o parâmetro a ser estudado deve ser um número inteiro ou não (e.g. se o parâmetro for o número de impregnações de um catalisador ele deve ser um número inteiro)."
-    center_prompt = "Informe o valor central do seu experimento. A variação do parametro será em torno deste valor."
-    lower_limit_prompt = "Informe qual o limite inferior possivel para o parâmetro (e.g. a temperatura mínima que o refrigerador utilizado chega é de -20 °C)."
-    upper_limit_prompt = "Informe qual o limite superior possivel para o parâmetro (e.g. a temperatura máxima que o forno utilizado chega é de 900 °C)."
-    delta_prompt = "Informe a variação tipica do parâmetro desejada em seu experimento. Os valores analisados do parâmetro estarão a uma distância de aproximadamente 1 delta do valor central."
-
+class Parameter:  #classe dos parâmetros
     def __init__(
         self, name, unit, is_integer, center, lower_limit, upper_limit, delta
-    ):  # recebe nome, unidade, se é inteiro, limite inferior, superior e delta
+    ):  #recebe nome, unidade, se é inteiro, limite inferior, superior e delta
         self.name = name
         self.unit = unit
         self.is_integer = is_integer
@@ -24,53 +13,59 @@ class Parameter:  # classe dos parâmetros
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
         self.delta = delta
-    
-    def limits_center_check(self): #testa se o centro esta entre os limites
-        if self.center >= self.upper_limit or self.center <= self.lower_limit:
-            return "O valor central inserido não está situado entre os limites inferior e superior. Mude o valor do centro, ou dos limites."
-    
-    def upper_limit_delta_check(self): #testa se o delta estrapola o limite superior
-        if self.delta > (self.upper_limit-self.center):
-            return "O valor de delta inserido foi grande demais. Diminua o valor de delta, ou aumente o do limite superior, para que o limite superior esteja a pelo menos um delta de distância do centro."
-
-    def lower_limit_delta_check(self): #testa se o delta estrapola o limite inferior
-        if self.delta > (self.center-self.lower_limit):
-            return "O valor de delta inserido foi grande demais. Diminua o valor de delta, ou diminua o do limite inferior, para que o limite inferior esteja a pelo menos um delta de distância do centro."
-
-    def center_integer_check(self): #testa se o parametro é inteiro e o centro não é inteiro
-        if self.is_integer and not(isinstance(self.center, int)):
-            return "O valor central inserido não foi um número inteiro. Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor central."
-                
-    def lower_limit_integer_check(self): #testa se o parametro é inteiro e o limite inferior não é inteiro
-        if self.is_integer and not(isinstance(self.lower_limit, int)):
-            return "O valor do limite inferior inserido não foi um número inteiro. Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor do limite inferior."
-
-    def upper_limit_integer_check(self): #testa se o parametro é inteiro e o limite superior não é inteiro
-        if self.is_integer and not(isinstance(self.upper_limit, int)):
-            return "O valor do limite superior inserido não foi um número inteiro. Como o parâmetro é um número inteiro, o mesmo deve ser válido para o valor do limite superior."
-                
-    def delta_integer_check(self): #testa se o parametro é inteiro e o delta não é inteiro
-        if self.is_integer and not(isinstance(self.delta, int)):
-            return "O valor de delta inserido não foi um número inteiro. Caso delta não seja inteiro, o planejamento experimental vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de delta."
 
     def encode(self, value): #codifica os valores reais
         return (value - self.center) / self.delta
 
-    def decode(self, value):  # decodifica os valores
+    def decode(self, value):  #decodifica os valores
         return (value * self.delta) + self.center
 
+class ParameterPrompts: #classe de prompts para as caixas dos parametros
+    name_prompt = "Informe o nome do parâmetro que será estudado (e.g. Temperatura, Massa, Molaridade do Soluto, etc)."
+    unit_prompt = "Informe as unidades o parâmetro que será estudado (e.g. °C, Kg, mol/L, etc)."
+    is_integer_prompt = "Informe se o parâmetro a ser estudado deve ser um número inteiro ou não (e.g. se o parâmetro for o número de impregnações de um catalisador ele deve ser um número inteiro)."
+    center_prompt = "Informe o valor central do seu experimento. A variação do parametro será em torno deste valor."
+    lower_limit_prompt = "Informe qual o limite inferior possivel para o parâmetro (e.g. a temperatura mínima que o refrigerador utilizado chega é de -20 °C)."
+    upper_limit_prompt = "Informe qual o limite superior possivel para o parâmetro (e.g. a temperatura máxima que o forno utilizado chega é de 900 °C)."
+    delta_prompt = "Informe a variação tipica do parâmetro desejada em seu experimento. Os valores analisados do parâmetro estarão a uma distância de aproximadamente 1 delta do valor central."
 
-class Point:  # To achando esse Point meio desnecessário. Se pá, melhor tirar.
-    def __init__(self, number_of_parameters):
-        self.dimensions = number_of_parameters
-        self.coordinates = []
+
+class ParameterTests: #classe para testar os parametros
+    def __init__(self, parameters_list):
+        self.parameter = parameters_list
+        self.return_error = []
+
+    def tests(self): #testa os parametros
+        for i in range(len(self.parameter)):
+            if self.parameter[i].center >= self.parameter[i].upper_limit or self.parameter[i].center <= self.parameter[i].lower_limit:
+                self.return_error.append(f"O valor central de {self.parameter[i].name} inserido não está situado entre os limites inferior e superior. Mude seu valor do centro, ou dos limites.")
+    
+            if self.parameter[i].delta > (self.parameter[i].upper_limit-self.parameter[i].center):
+                self.return_error.append(f"O valor de delta de {self.parameter[i].name} inserido foi grande demais. Diminua seu valor de delta, ou aumente o do limite superior, para que o limite superior esteja a pelo menos um delta de distância do centro.")
+        
+            if self.parameter[i].delta > (self.parameter[i].center-self.parameter[i].lower_limit):
+                self.return_error.append(f"O valor de delta de {self.parameter[i].name} inserido foi grande demais. Diminua seu valor de delta, ou diminua o do limite inferior, para que o limite inferior esteja a pelo menos um delta de distância do centro.")
+
+            if self.parameter[i].is_integer and not(isinstance(self.parameter[i].center, int)):
+                self.return_error.append(f"O valor central de {self.parameter[i].name} inserido não foi um número inteiro. Como {self.parameter[i].name} é um número inteiro, o mesmo deve ser válido para seu valor central.")
+                    
+            if self.parameter[i].is_integer and not(isinstance(self.parameter[i].lower_limit, int)):
+                self.return_error.append(f"O valor do limite inferior de {self.parameter[i].name} inserido não foi um número inteiro. Como {self.parameter[i].name} é um número inteiro, o mesmo deve ser válido para seu valor do limite inferior.")
+
+            if self.parameter[i].is_integer and not(isinstance(self.parameter[i].upper_limit, int)):
+                self.return_error.append(f"O valor do limite superior de {self.parameter[i].name} inserido não foi um número inteiro. Como {self.parameter[i].name} é um número inteiro, o mesmo deve ser válido para seu valor do limite superior.")
+                    
+            if self.parameter[i].is_integer and not(isinstance(self.parameter[i].delta, int)):
+                self.return_error.append(f"O valor de delta de {self.parameter[i].name} inserido não foi um número inteiro. Caso delta não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como {self.parameter[i].name} é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para seu valor de delta.")
+
+        return self.return_error
 
 class FatorialPlan: #classe do planejamento fatorial
     alpha_prompt = "Informe o valor de alfa, usado para a escolha dos pontos axiais do planejamento fatorial."
 
     def __init__(self, parameters_list, alpha, has_integer): #recebe uma lista com os parâmetros, o valor de alfa e se possui pelo menos um parâmetro inteiro
         self.dimensions = len(parameters_list)
-        self.parameters = parameters_list
+        self.parameter = parameters_list
         self.alpha = alpha
         self.has_integer = has_integer
 
@@ -86,26 +81,6 @@ class FatorialPlan: #classe do planejamento fatorial
             axial_point = [0] * self.dimensions
             axial_point[i] = self.alpha
             self.axial.append(axial_point)
-
-    def alpha_integer_check(self): #testa se tem parametro inteiro, mas o alfa não
-        if self.has_integer and not(isinstance(self.alpha, int)):
-            return "O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha."
-
-    def alpha_dimension_check(self): #testa se o alfa é maior que um e menor que raiz das dimensoes
-        if self.alpha < 1:
-            return "O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro."
-        if self.alpha > sqrt(self.dimensions):
-            return "O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância."
-    
-    def upper_limit_alfa_check(self): #testa se o alfa estrapola o limite superior
-        for i in range(len(self.parameters)):
-            if self.alpha > self.parameter[i].code(self.parameter[i].upper_limit):
-                return f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {self.parameters[i].name}, para que o valor codificado do limite superior de {self.parameters[i].name} esteja a pelo menos um alfa de distância do centro."
-
-    def lower_limit_alfa_check(self): #testa se o alfa estrapola o limite inferior
-        for i in range(len(self.parameters)):
-            if self.alpha > -self.parameter[i].code(self.parameter[i].lower_limit):
-                return f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {self.parameters[i].name}, para que o valor codificado do limite inferior de {self.parameters[i].name} esteja a pelo menos um alfa de distância do centro."
         
     return_center_info = "Este é o ponto central do planejamento fatorial. Ele assim é chamado pois o planejamento é construido em volta dele. Devem ser feitas de 3 a 5 repetições do experimento no ponto central, pois ele será importante para estimar a variância dos dados."
 
@@ -113,7 +88,7 @@ class FatorialPlan: #classe do planejamento fatorial
         real_plan = []
 
         for i in range(self.dimensions):
-            real_plan.append(self.parameters[i].decode(self.center[i]))
+            real_plan.append(self.parameter[i].decode(self.center[i]))
 
         return np.round(real_plan, 3)
 
@@ -125,7 +100,7 @@ class FatorialPlan: #classe do planejamento fatorial
         for i in range(len(self.cubic)):
             real_plan.append([])
             for j in range(self.dimensions):
-                real_plan[i].append(self.parameters[j].decode(self.cubic[i][j]))
+                real_plan[i].append(self.parameter[j].decode(self.cubic[i][j]))
 
         return np.round(real_plan, 3)
 
@@ -137,6 +112,28 @@ class FatorialPlan: #classe do planejamento fatorial
         for i in range(len(self.axial)):
             real_plan.append([])
             for j in range(self.dimensions):
-                real_plan[i].append(self.parameters[j].decode(self.axial[i][j]))
+                real_plan[i].append(self.parameter[j].decode(self.axial[i][j]))
 
         return np.round(real_plan, 3)
+
+class FatorialPlanTests: #classe para testar o alfa
+    def __init__(self, fatorial_plan):
+        self.fatorial_plan = fatorial_plan
+        self.return_erro = []
+
+    def tests(self): #testa o alfa
+        if self.fatorial_plan.has_integer and not(isinstance(self.fatorial_plan.alpha, int)):
+            self.return_erro.append("O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha.")
+        
+        if self.fatorial_plan.alpha < 1:
+            self.return_erro.append("O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro.")
+        
+        if self.fatorial_plan.alpha > sqrt(self.fatorial_plan.dimensions):
+            self.return_erro.append("O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância.") 
+        
+        for i in range(len(self.fatorial_plan.parameter)):
+            if self.fatorial_plan.alpha > self.fatorial_plan.parameter[i].code(self.fatorial_plan.parameter[i].upper_limit):
+                self.return_erro.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {self.fatorial_plan.parameters[i].name}, para que o valor codificado do limite superior de {self.fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
+
+            if self.fatorial_plan.alpha > -self.fatorial_plan.parameter[i].code(self.fatorial_plan.parameter[i].lower_limit):
+                    self.return_erro.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {self.fatorial_plan.parameters[i].name}, para que o valor codificado do limite inferior de {self.fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
