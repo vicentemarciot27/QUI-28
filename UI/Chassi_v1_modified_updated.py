@@ -1,6 +1,7 @@
 # internal imports
 from UI.common import open_docs
 from logica.duovar.Entregando_perifericos import *
+import math
 # from UI.pages.parametros import open_parametros
 # from UI.components.sidebar import Sidebar
 
@@ -71,6 +72,7 @@ class ExtendedInput(ctk.CTkFrame):
 
     def send_data(self):
         parameters_list = []
+        is_integer = False
     
         for row_entries in self.entries:
             variable_data = {
@@ -83,22 +85,26 @@ class ExtendedInput(ctk.CTkFrame):
                 "is_integer": row_entries[6].get()
          }
             parameter = create_parameter_from_data(variable_data)
+            if(parameter.is_integer):
+                is_integer = True
             print(parameter.unit)
             parameters_list.append(parameter)
         
-        fatorial = FatorialPlan(len(parameters_list), math.sqrt(2))
-
-        fatorial_plan_list = fatorial.fatorial
-
-        real_plan = return_plan(parameters_list, fatorial_plan_list)
-
+        fatorial = FatorialPlan(parameters_list, math.sqrt(2), is_integer)
         
         output_strings = []
-        for param in parameters_list:
-            output_string = f"The variable {param.name} with unit of measure {param.unit} needs to use the following points: {real_plan}"
-            output_strings.append(output_string)
-            print(real_plan)
-            print(param.unit)# Just for debugging.
+        
+        output_strings.append(f"{fatorial.return_center()}\n Este é o ponto central do planejamento fatorial. " 
+                              "Ele assim é chamado pois o planejamento é construido em volta dele."
+                              " Devem ser feitas de 3 a 5 repetições do experimento no ponto central,"
+                              " pois ele será importante para estimar a variância dos dados.\n\n")
+        output_strings.append(f"{fatorial.return_axial()}\n Esses são os pontos cúbicos do planejamento fatorial. "
+                              " Eles assim são chamados pois no espaço de planejamento eles formam um quadrado"
+                              " (para 2 parâmetros), um cubo (para 3 parâmetros), ou um hypercubo (para mais"
+                              " de 3 parâmetros).\n\n")
+        output_strings.append(f"{fatorial.return_cubic()}\n Esses são os pontos axiais do planejamento fatorial. "
+                              " Eles assim são chamados pois ficam sobre os eixos do espaço de planejamento.\n\n")
+        
         self.output_label.configure(text="\n".join(output_strings))
     
 

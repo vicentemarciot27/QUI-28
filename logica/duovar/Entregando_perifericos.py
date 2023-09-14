@@ -1,16 +1,22 @@
 from math import sqrt
 from itertools import product
+import numpy as np
 
-class Parameter: #classe dos parâmetros
+
+class Parameter:  # classe dos parâmetros
     name_prompt = "Informe o nome do parâmetro que será estudado (e.g. Temperatura, Massa, Molaridade do Soluto, etc)."
-    unit_prompt = "Informe as unidades o parâmetro que será estudado (e.g. °C, Kg, mol/L, etc)."
+    unit_prompt = (
+        "Informe as unidades o parâmetro que será estudado (e.g. °C, Kg, mol/L, etc)."
+    )
     is_integer_prompt = "Informe se o parâmetro a ser estudado deve ser um número inteiro ou não (e.g. se o parâmetro for o número de impregnações de um catalisador ele deve ser um número inteiro)."
     center_prompt = "Informe o valor central do seu experimento. A variação do parametro será em torno deste valor."
     lower_limit_prompt = "Informe qual o limite inferior possivel para o parâmetro (e.g. a temperatura mínima que o refrigerador utilizado chega é de -20 °C)."
     upper_limit_prompt = "Informe qual o limite superior possivel para o parâmetro (e.g. a temperatura máxima que o forno utilizado chega é de 900 °C)."
     delta_prompt = "Informe a variação tipica do parâmetro desejada em seu experimento. Os valores analisados do parâmetro estarão a uma distância de aproximadamente 1 delta do valor central."
 
-    def __init__(self, name, unit, is_integer, center, lower_limit, upper_limit, delta): #recebe nome, unidade, se é inteiro, limite inferior, superior e delta
+    def __init__(
+        self, name, unit, is_integer, center, lower_limit, upper_limit, delta
+    ):  # recebe nome, unidade, se é inteiro, limite inferior, superior e delta
         self.name = name
         self.unit = unit
         self.is_integer = is_integer
@@ -49,11 +55,12 @@ class Parameter: #classe dos parâmetros
 
     def encode(self, value): #codifica os valores reais
         return (value - self.center) / self.delta
-    
-    def decode(self, value): #decodifica os valores
+
+    def decode(self, value):  # decodifica os valores
         return (value * self.delta) + self.center
 
-class Point: #To achando esse Point meio desnecessário. Se pá, melhor tirar.
+
+class Point:  # To achando esse Point meio desnecessário. Se pá, melhor tirar.
     def __init__(self, number_of_parameters):
         self.dimensions = number_of_parameters
         self.coordinates = []
@@ -108,28 +115,28 @@ class FatorialPlan: #classe do planejamento fatorial
         for i in range(self.dimensions):
             real_plan.append(self.parameters[i].decode(self.center[i]))
 
-        return real_plan
-    
+        return np.round(real_plan, 3)
+
     return_cubic_info = "Esses são os pontos cúbicos do planejamento fatorial. Eles assim são chamados pois no espaço de planejamento eles formam um quadrado (para 2 parâmetros), um cubo (para 3 parâmetros), ou um hypercubo (para mais de 3 parâmetros)."
-    
+
     def return_cubic(self):
         real_plan = []
 
         for i in range(len(self.cubic)):
             real_plan.append([])
-            for j in range(len(self.dimensions)):
+            for j in range(self.dimensions):
                 real_plan[i].append(self.parameters[j].decode(self.cubic[i][j]))
-    
-        return real_plan
+
+        return np.round(real_plan, 3)
 
     return_axial_info = "Esses são os pontos axiais do planejamento fatorial. Eles assim são chamados pois ficam sobre os eixos do espaço de planejamento."
-    
+
     def return_axial(self):
         real_plan = []
 
         for i in range(len(self.axial)):
             real_plan.append([])
-            for j in range(len(self.dimensions)):
+            for j in range(self.dimensions):
                 real_plan[i].append(self.parameters[j].decode(self.axial[i][j]))
-    
-        return real_plan
+
+        return np.round(real_plan, 3)
