@@ -63,27 +63,9 @@ class FatorialPlan: #classe do planejamento fatorial
 
     def __init__(self, parameters_list, alpha, has_integer): #recebe uma lista com os parâmetros, o valor de alfa e se possui pelo menos um parâmetro inteiro
         self.dimensions = len(parameters_list)
-        self.parameters_list = parameters_list
+        self.parameters = parameters_list
         self.alpha = alpha
         self.has_integer = has_integer
-
-    def alpha_integer_check(self): #testa se o parametro é inteiro, mas o alfa não
-        if self.has_integer and not(isinstance(self.alpha, int)):
-            return "O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha."
-
-    def alpha_dimension_check(self): #checa se o alfa é maior que um e menor que raiz das dimensoes
-        if self.alpha < 1:
-            return "O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro."
-        if self.alpha > sqrt(self.dimensions):
-            return "O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância."
-    
-    def upper_limit_alfa_check(self): #testa se o alfa estrapola o limite superior
-        if self.delta > (self.upper_limit-self.center):
-            return "O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior, para que o limite superior esteja a pelo menos um alfa de distância do centro."
-
-    def lower_limit_alfa_check(self): #testa se o alfa estrapola o limite inferior
-        if self.delta > (self.center-self.lower_limit):
-            return "O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior, para que o limite inferior esteja a pelo menos um alfa de distância do centro."
 
         self.center = [0] * self.dimensions
 
@@ -97,6 +79,26 @@ class FatorialPlan: #classe do planejamento fatorial
             axial_point = [0] * self.dimensions
             axial_point[i] = self.alpha
             self.axial.append(axial_point)
+
+    def alpha_integer_check(self): #testa se tem parametro inteiro, mas o alfa não
+        if self.has_integer and not(isinstance(self.alpha, int)):
+            return "O valor de alpha inserido não foi um número inteiro. Caso alpha não seja inteiro, o planejamento fatorial vai pedir que coordenadas não inteiras sejam analisadas. Como o parâmetro é um número inteiro, o mesmo deve ser válido para suas coordenadas, e portanto, para o valor de alpha."
+
+    def alpha_dimension_check(self): #testa se o alfa é maior que um e menor que raiz das dimensoes
+        if self.alpha < 1:
+            return "O valor de alpha inserido foi menor que 1. Dessa forma, os pontos axiais do planejamento fatorial vão ficar mais próximos do que a distancia típica, o delta, escolhida para cada parâmetro."
+        if self.alpha > sqrt(self.dimensions):
+            return "O valor de alpha inserido foi maior que a raiz quadrada do número de parâmetros a serem estudados. Dessa forma, os pontos axiais do planejamento fatorial vão ficar muito longe do ponto central, e portanto a analise dos resultados referentes a esses pontos podem perder relevância."
+    
+    def upper_limit_alfa_check(self): #testa se o alfa estrapola o limite superior
+        for i in range(len(self.parameters)):
+            if self.alpha > self.parameter[i].code(self.parameter[i].upper_limit):
+                return f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {self.parameters[i].name}, para que o valor codificado do limite superior de {self.parameters[i].name} esteja a pelo menos um alfa de distância do centro."
+
+    def lower_limit_alfa_check(self): #testa se o alfa estrapola o limite inferior
+        for i in range(len(self.parameters)):
+            if self.alpha > -self.parameter[i].code(self.parameter[i].lower_limit):
+                return f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {self.parameters[i].name}, para que o valor codificado do limite inferior de {self.parameters[i].name} esteja a pelo menos um alfa de distância do centro."
         
     return_center_info = "Este é o ponto central do planejamento fatorial. Ele assim é chamado pois o planejamento é construido em volta dele. Devem ser feitas de 3 a 5 repetições do experimento no ponto central, pois ele será importante para estimar a variância dos dados."
 
@@ -104,7 +106,7 @@ class FatorialPlan: #classe do planejamento fatorial
         real_plan = []
 
         for i in range(self.dimensions):
-            real_plan.append(self.parameters_list[i].decode(self.center[i]))
+            real_plan.append(self.parameters[i].decode(self.center[i]))
 
         return real_plan
     
@@ -116,7 +118,7 @@ class FatorialPlan: #classe do planejamento fatorial
         for i in range(len(self.cubic)):
             real_plan.append([])
             for j in range(len(self.dimensions)):
-                real_plan[i].append(self.parameters_list[j].decode(self.cubic[i][j]))
+                real_plan[i].append(self.parameters[j].decode(self.cubic[i][j]))
     
         return real_plan
 
@@ -128,6 +130,6 @@ class FatorialPlan: #classe do planejamento fatorial
         for i in range(len(self.axial)):
             real_plan.append([])
             for j in range(len(self.dimensions)):
-                real_plan[i].append(self.parameters_list[j].decode(self.axial[i][j]))
+                real_plan[i].append(self.parameters[j].decode(self.axial[i][j]))
     
         return real_plan
