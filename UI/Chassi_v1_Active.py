@@ -135,19 +135,19 @@ class ExtendedInput(ctk.CTkFrame):
         output_strings = []
 
         output_strings.append(
-            f"{fatorial.return_center()}\n Este é o ponto central do planejamento fatorial. "
+            f"{return_real_plan(fatorial, fatorial.center)}\n Este é o ponto central do planejamento fatorial. "
             "Ele assim é chamado pois o planejamento é construido em volta dele."
             " Devem ser feitas de 3 a 5 repetições do experimento no ponto central,"
             " pois ele será importante para estimar a variância dos dados.\n\n"
         )
         output_strings.append(
-            f"{beautify_matrix(fatorial.return_axial())}\n Esses são os pontos cúbicos do planejamento fatorial. "
+            f"{beautify_matrix(return_real_plan(fatorial, fatorial.cubic))}\n Esses são os pontos cúbicos do planejamento fatorial. "
             " Eles assim são chamados pois no espaço de planejamento eles formam um quadrado"
             " (para 2 parâmetros), um cubo (para 3 parâmetros), ou um hypercubo (para mais"
             " de 3 parâmetros).\n\n"
         )
         output_strings.append(
-            f"{beautify_matrix(fatorial.return_cubic())}\n Esses são os pontos axiais do planejamento fatorial. "
+            f"{beautify_matrix(return_real_plan(fatorial, fatorial.axial))}\n Esses são os pontos axiais do planejamento fatorial. "
             " Eles assim são chamados pois ficam sobre os eixos do espaço de planejamento.\n\n"
         )
 
