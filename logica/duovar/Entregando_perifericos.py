@@ -63,7 +63,7 @@ class FatorialPlan: #classe do planejamento fatorial
         self.alpha = alpha
         self.has_integer = has_integer
 
-        self.center = [0] * self.dimensions
+        self.center = [[0] * self.dimensions]
 
         self.cubic = list(product([-1, 1], repeat=self.dimensions))
 
@@ -87,14 +87,10 @@ class FatorialPlanPrompts:
 def return_real_plan(fatorial_plan, plan):
     real_plan = []
 
-    if(len(plan) == 1):
-        for i in range(fatorial_plan.dimensions):
-            real_plan.append(decode(fatorial_plan.parameter[i], plan[i]))
-    else:
-        for i in range(len(plan)):
-            real_plan.append([])
-            for j in range(fatorial_plan.dimensions):
-                real_plan[i].append(decode(fatorial_plan.parameter[j], plan[i][j]))
+    for i in range(len(plan)):
+        real_plan.append([])
+        for j in range(fatorial_plan.dimensions):
+            real_plan[i].append(decode(fatorial_plan.parameter[j], plan[i][j]))
 
     return np.round(real_plan, 3)
 
