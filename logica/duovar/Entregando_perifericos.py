@@ -87,10 +87,14 @@ class FatorialPlanPrompts:
 def return_real_plan(fatorial_plan, plan):
     real_plan = []
 
-    for i in range(len(plan)):
-        real_plan.append([])
-        for j in range(fatorial_plan.dimensions):
-            real_plan[i].append(decode(fatorial_plan.parameter[j], plan[i][j]))
+    if(len(plan) == 1):
+        for i in range(fatorial_plan.dimensions):
+            real_plan.append(decode(fatorial_plan.parameter[i], plan[i]))
+    else:
+        for i in range(len(plan)):
+            real_plan.append([])
+            for j in range(fatorial_plan.dimensions):
+                real_plan[i].append(decode(fatorial_plan.parameter[j], plan[i][j]))
 
     return np.round(real_plan, 3)
 
