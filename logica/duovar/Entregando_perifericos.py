@@ -1,6 +1,7 @@
 from math import sqrt
 from itertools import product
 import numpy as np
+import pandas as pd
 
 class Parameter:  #classe dos parâmetros
     def __init__(
@@ -65,7 +66,19 @@ class FatorialPlan: #classe do planejamento fatorial
 
         self.center = [[0] * self.dimensions]
 
+        self.real_center = []
+        for i in range(len(self.center)):
+            self.real_center.append([])
+            for j in range(self.dimensions):
+                self.real_center[i].append(decode(self.parameter[j], self.center[i][j]))
+
         self.cubic = list(product([-1, 1], repeat=self.dimensions))
+
+        self.real_cubic = []
+        for i in range(len(self.cubic)):
+            self.real_cubic.append([])
+            for j in range(self.dimensions):
+                self.real_cubic[i].append(decode(self.parameter[j], self.cubic[i][j]))
 
         self.axial = []
         for i in range(self.dimensions):
@@ -76,7 +89,35 @@ class FatorialPlan: #classe do planejamento fatorial
             axial_point[i] = self.alpha
             self.axial.append(axial_point)
 
-        self.total = self.center + self.cubic + self.axial
+        self.real_axial = []
+        for i in range(len(self.axial)):
+            self.real_axial.append([])
+            for j in range(self.dimensions):
+                self.real_axial[i].append(decode(self.parameter[j], self.axial[i][j]))
+
+        self.number_of_observations = len(self.center) + len(self.cubic) + len(self.axial)
+
+    def return_plan(self):
+        plan = pd.DataFrame()
+
+        plan["Componente"] = []
+        for i in range(self.dimensions):
+            plan[f"{self.parameter[i].name} Codificada"] = []
+
+        for i in range(self.dimensions):
+            plan[f"{self.parameter[i].name} Real"] = []
+        
+        for i in range(self.number_of_observations):
+            for j in range(len(self.center)):
+                plan.loc[i] = ["Central"] + (np.round(self.center[j], 3)).tolist() + (np.round(self.real_center[j]), 3).tolist()
+            
+            for j in range(len(self.cubic)):
+                plan.loc[i] = ["Cúbica"] + (np.round(self.cubic[j], 3)).tolist() + (np.round(self.real_cubic[j]), 3).tolist()
+
+            for j in range(len(self.axial)):
+                plan.loc[i] = ["Axial"] + (np.round(self.axial[j], 3)).tolist() + (np.round(self.real_axial[j]), 3).tolist()
+            
+        return plan
 
 class FatorialPlanPrompts:
     alpha_prompt = "Informe o valor de alfa, usado para a escolha dos pontos axiais do planejamento fatorial."
@@ -84,7 +125,7 @@ class FatorialPlanPrompts:
     cubic_info = "Esses são os pontos cúbicos do planejamento fatorial. Eles assim são chamados pois no espaço de planejamento eles formam um quadrado (para 2 parâmetros), um cubo (para 3 parâmetros), ou um hypercubo (para mais de 3 parâmetros)."
     axial_info = "Esses são os pontos axiais do planejamento fatorial. Eles assim são chamados pois ficam sobre os eixos do espaço de planejamento."
 
-def return_real_plan(fatorial_plan, plan):
+def return_real_plan(fatorial_plan, plan): #possivelmente substituido pelo DataFrame
     real_plan = []
 
     for i in range(len(plan)):

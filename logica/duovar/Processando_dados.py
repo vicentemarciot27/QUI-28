@@ -1,11 +1,14 @@
 import numpy as np
 import scipy as sp
+from scipy.optimize import minimize
+from scipy.optimize import maximize
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from Entregando_perifericos import Parameter
 from math import floor
 from math import ceil
+from math import sqrt
 
 class LinearModel: #modelo linear
     def __init__(self, data_frame, parameters_list):
@@ -18,10 +21,10 @@ class LinearModel: #modelo linear
         self.response_matrix = self.data_plan["Resposta"].values
 
         matrix = []
-        for index, row in self.data_plan.iterrows():
+        for i in range(self.number_of_observations):
             matrix.append([1])
-            for i in range(self.number_of_parameters):
-                matrix[index].append(row[self.parameter[i].name])
+            for j in range(self.number_of_parameters):
+                matrix[i].append(self.data_plan.at[i, self.parameter[j].name])
 
         self.planning_matrix = np.array(matrix)
 
@@ -43,6 +46,13 @@ class LinearModel: #modelo linear
         
         self.explained_variation = self.SQR/self.SQT
 
+    def curve(self, point):
+        ans = self.coefficients_matrix[0]
+        for i in range(self.number_of_parameters):
+            ans += point[i]*self.coefficients_matrix[i+1]
+
+        return ans
+    
     def linear_plot(self):
         if(self.number_of_parameters == 1):
             x = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
@@ -69,13 +79,32 @@ class LinearModel: #modelo linear
             ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
             ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
             ax.set_zlabel("Resposta")
-            ax.set_title(f"Resposta em função de {self.parameter[0].name} e {self.parameter[0].name}")
+            ax.set_title(f"Resposta em função de {self.parameter[0].name} e {self.parameter[1].name}")
+
+            return plt.gcf()
+        elif(self.number_of_parameters == 3):
+            x_lin = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
+            y_lin = np.linspace(floor(self.data_plan[self.paramter[1].name].min()), ceil(self.data_plan[self.paramter[1].name].max()), 100)
+            z_lin = np.linspace(floor(self.data_plan[self.paramter[2].name].min()), ceil(self.data_plan[self.paramter[2].name].max()), 100)
+
+            x, y, z = np.meshgrid(x_lin, y_lin, z_lin)
+            colors = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2] + z*self.coefficients_matrix[3]
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(self.data_plan[self.parameter[0].name], self.data_plan[self.parameter[1].name], self.data_plan[self.parameter[2].name])
+            plot_surface = ax.plot_surface(x, y, z, c=colors, cmap='viridis')
+            cbar = plt.colorbar(plot_surface)
+            ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
+            ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
+            ax.set_zlabel(f"{self.parameter[2].name} ({self.parameter[2].unit})")
+            cbar.set_label("Resposta")
+            ax.set_title(f"Resposta em função de {self.parameter[0].name}, {self.parameter[1].name} e {self.parameter[2].name}")
 
             return plt.gcf()
         else:
             return 0
 
-    
 class QuadraticModel: #modelo quadratico
     def __init__(self, data_frame, parameters_list):
         self.data_plan = data_frame
@@ -89,18 +118,18 @@ class QuadraticModel: #modelo quadratico
         matrix = []
         cross_terms = (self.number_of_parameters*(self.number_of_parameters - 1))/2
 
-        for index, row in self.data_plan.iterrows():
+        for i in range(self.number_of_observations):
             matrix.append([1])
-            for i in range(self.number_of_parameters):
-                matrix[index].append(row[self.parameter[i].name])
+            for j in range(self.number_of_parameters):
+                matrix[i].append(self.data_plan.at[i, self.parameter[j].name])
 
-            for i in range(self.number_of_parameters):
-                matrix[index].append(row[self.parameter[i].name]**2)
+            for j in range(self.number_of_parameters):
+                matrix[i].append(self.data_plan.at[i, self.parameter[j].name]**2)
 
-            for i in range(cross_terms):
-                for j in range(cross_terms):
-                    if(j>i):
-                        matrix[index].append(row[self.parameter[i].name] * row[self.parameter[j].name])
+            for j in range(cross_terms):
+                for k in range(cross_terms):
+                    if(k>j):
+                        matrix[i].append(self.data_plan.at[i, self.parameter[j].name] * self.data_plan.loc[i, self.parameter[k].name])
 
         self.planning_matrix = np.array(matrix)
 
@@ -122,6 +151,24 @@ class QuadraticModel: #modelo quadratico
         
         self.explained_variation = self.SQR/self.SQT
 
+    def curve(self, point):
+        ans = self.coefficients_matrix[0]
+        i=1
+        cross_terms = (self.number_of_parameters*(self.number_of_parameters - 1))/2
+
+        for j in range(self.number_of_parameters):
+            ans += point[j]*self.coefficients_matrix[i]
+
+        for j in range(self.number_of_parameters):
+            ans += (point[j]**2)*self.coefficients_matrix[i]
+
+        for j in range(cross_terms):
+            for k in range(cross_terms):
+                if(k>j):
+                    ans += (point[j]*point[k])*self.coefficients_matrix[i]
+
+        return ans
+    
     def quadratic_plot(self):
         if(self.number_of_parameters == 1):
             x = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
@@ -151,6 +198,26 @@ class QuadraticModel: #modelo quadratico
             ax.set_title(f"Resposta em função de {self.parameter[0].name} e {self.parameter[0].name}")
 
             return plt.gcf()
+        elif(self.number_of_parameters == 3):
+            x_lin = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
+            y_lin = np.linspace(floor(self.data_plan[self.paramter[1].name].min()), ceil(self.data_plan[self.paramter[1].name].max()), 100)
+            z_lin = np.linspace(floor(self.data_plan[self.paramter[2].name].min()), ceil(self.data_plan[self.paramter[2].name].max()), 100)
+
+            x, y, z = np.meshgrid(x_lin, y_lin, z_lin)
+            colors = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2] + z*self.coefficients_matrix[3] + (x**2)*self.coefficients_matrix[4] + (y**2)*self.coefficients_matrix[5] + (z**2)*self.coefficients_matrix[6] + (x*y)*self.coefficients_matrix[7] + (x*z)*self.coefficients_matrix[8] + (y*z)*self.coefficients_matrix[9] 
+
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(self.data_plan[self.parameter[0].name], self.data_plan[self.parameter[1].name], self.data_plan[self.parameter[2].name])
+            plot_surface = ax.plot_surface(x, y, z, c=colors, cmap='viridis')
+            cbar = plt.colorbar(plot_surface)
+            ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
+            ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
+            ax.set_zlabel(f"{self.parameter[2].name} ({self.parameter[2].unit})")
+            cbar.set_label("Resposta")
+            ax.set_title(f"Resposta em função de {self.parameter[0].name}, {self.parameter[1].name} e {self.parameter[2].name}")
+
+            return plt.gcf()
         else:
             return 0
     
@@ -168,6 +235,16 @@ def F_test(model): #realiza o teste F
             return_string.append("A razão entre as média quadráticas não é maior que o valor crítico F. Portanto, a regressão não é estatisticamente relevante.")
         
         return return_string
+
+def optimal_point(model, optimization_type):
+    initial_point = []
+    for i in range(model.number_of_parameters):
+        initial_point.append(model.data_plan.at[0, model.parameter[i].name])
+
+    if(optimization_type):
+        return maximize(model.curve(), initial_point)
+    else:
+        return minimize(model.curve(), initial_point)
 
 def data_plan_plot(data_frame, parameter): #plota os dados coletados
     dimensions = len(parameter)
@@ -201,7 +278,7 @@ def residuals_expectations_plot(model): #plota os resíduos pela resposta previs
     return plt.gcf()
 
 def residuals_parameters_plot(model): #plota os resíduos por cada parâmetro
-    fig, axs = plt.subplots(floor(model.number_of_parameters), ceil(model.number_of_parameters), figsize=(10, 4))
+    fig, axs = plt.subplots(ceil(sqrt(model.number_of_parameters)), ceil(sqrt(model.number_of_parameters)), figsize=(10, 4))
 
     for i in range(model.number_of_parameters):
         axs[i].scatter(model.data_plan[model.parameter[i].name], model.residuals_matrix)

@@ -135,7 +135,7 @@ class ExtendedInput(ctk.CTkFrame):
         output_strings = []
 
         output_strings.append(
-            f"{return_real_plan(fatorial, fatorial.center)}\n Este é o ponto central do planejamento fatorial. "
+            f"{beautify_matrix(return_real_plan(fatorial, fatorial.center))}\n Este é o ponto central do planejamento fatorial. "
             "Ele assim é chamado pois o planejamento é construido em volta dele."
             " Devem ser feitas de 3 a 5 repetições do experimento no ponto central,"
             " pois ele será importante para estimar a variância dos dados.\n\n"
