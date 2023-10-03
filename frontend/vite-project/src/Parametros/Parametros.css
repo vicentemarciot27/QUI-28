@@ -1,0 +1,48 @@
+/* styles.css */
+#Parametros {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background: #c9c7c7;
+  border-radius: 5px;
+  color: black;
+}
+
+#Parametros div {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+#Parametros label {
+  margin: 20px 0 5px;
+  display: block;
+  font-size: 1.5rem;
+}
+
+#Parametros input[type="text"],
+#Parametros input[type="number"] {
+  border: 1px solid #bdbdbd;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 3px;
+  width: 200px;
+  margin: 10px;
+  flex-basis: 48%;
+}
+
+#Parametros .SendBtn {
+  padding: 10px 20px;
+  border: none;
+  background-color: #0042bd; /* Green background */
+  color: white; /* White text */
+  font-size: 16px;
+  cursor: pointer; /* Hand cursor on hover */
+  border-radius: 5px; /* Rounded corners */
+  margin-top: 20px;
+}
+
+#Parametros .SendBtn:hover {
+  background-color: #0b08c0; /* Darker green background on hover */
+}

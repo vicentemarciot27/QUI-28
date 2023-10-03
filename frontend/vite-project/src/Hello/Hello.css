@@ -1,0 +1,15 @@
+#Hello{
+    margin: 5rem;
+}
+
+#Hello .Titulo {
+    font-size: 12rem;
+    font-weight: 500;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+#Hello a:hover{
+    filter: drop-shadow(0 0 2em #646cffaa);
+    cursor: pointer;
+}
