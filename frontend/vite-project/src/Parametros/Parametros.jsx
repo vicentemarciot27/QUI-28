@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import "./Parametros.css";
 
-import axios from 'axios';
+import axios from "axios";
 
 function VariableForm() {
   const [state, setState] = useState({
     numVariables: 0,
-    alpha: 0,  
+    alpha: 0,
     variables: [],
-});
-
+    has_integer: false,
+  });
 
   const [response, setResponse] = useState(null);
 
@@ -29,6 +29,7 @@ function VariableForm() {
       variables: Array.from({ length: numVariables }, () => ({
         name: "",
         unit: "",
+        value: "",
         maxValue: "",
         minValue: "",
         delta: "",
@@ -45,19 +46,18 @@ function VariableForm() {
       ...state,
       variables: newVariables,
     });
-}
-
+  }
 
   // Handle form submission
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-        const response = await axios.post("http://localhost:5000/submit", state);
-        setResponse(response.data);  // set the response data to the state
+      const response = await axios.post("http://localhost:5000/submit", state);
+      setResponse(response.data); // set the response data to the state
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
-}
+  }
 
   // Export as JSON
   function exportAsJSON() {
@@ -105,6 +105,16 @@ function VariableForm() {
           placeholder="Enter global alpha value"
         />
       </label>
+      <label>
+        Integer:
+        <input
+          type="checkbox"
+          checked={state.has_integer}
+          onChange={(e) =>
+            handleGlobalInputChange("has_integer", e.target.checked)
+          }
+        />
+      </label>
       {state.variables.map((variable, index) => (
         <div className="InputsdeVar" key={index}>
           <h2>Variable {index}:</h2>
@@ -131,6 +141,18 @@ function VariableForm() {
                 placeholder="Enter unit" // <-- added placeholder
               />
             </label>
+            <label>
+              Value: <br />
+              <input
+                type="number"
+                value={variable.value || ""}
+                onChange={(e) =>
+                  handleVariableChange(index, "value", e.target.value)
+                }
+                placeholder="Enter value"
+              />
+            </label>
+
             <label>
               Max: <br />
               <input
@@ -180,12 +202,11 @@ function VariableForm() {
       </div>
 
       {response && (
-            <div className="response-data">
-                <h2>Received Data:</h2>
-                <pre>{JSON.stringify(response, null, 2)}</pre>
-            </div>
-        )}
-        
+        <div className="response-data">
+          <h2>Received Data:</h2>
+          <pre>{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      )}
     </form>
   );
 }
