@@ -1,11 +1,25 @@
 import React, { useState } from "react";
 import "./Parametros.css";
 
+import axios from 'axios';
+
 function VariableForm() {
   const [state, setState] = useState({
     numVariables: 0,
+    alpha: 0,  
     variables: [],
-  });
+});
+
+
+  const [response, setResponse] = useState(null);
+
+  // Handle global inputs (like alpha)
+  function handleGlobalInputChange(field, value) {
+    setState({
+      ...state,
+      [field]: value,
+    });
+  }
 
   // Generates new variables from changing the number of variables
   function handleNumVariablesChange(e) {
@@ -31,19 +45,19 @@ function VariableForm() {
       ...state,
       variables: newVariables,
     });
-  }
+}
+
 
   // Handle form submission
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      // Send a POST request to the Flask backend
-      const response = await axios.post("http://localhost:5000/submit", state);
-      console.log(response.data);
+        const response = await axios.post("http://localhost:5000/submit", state);
+        setResponse(response.data);  // set the response data to the state
     } catch (error) {
-      console.error(error);
+        console.error(error);
     }
-  }
+}
 
   // Export as JSON
   function exportAsJSON() {
@@ -74,22 +88,32 @@ function VariableForm() {
   return (
     <form id="Parametros" onSubmit={handleSubmit}>
       <label>
-        Number of Variables:
+        Number of Variables: <br />
         <input
           type="number"
           value={state.numVariables}
           onChange={handleNumVariablesChange}
         />
       </label>
+      {/* Input for global alpha */}
+      <label>
+        Alpha: <br />
+        <input
+          type="number"
+          value={state.alpha || 0}
+          onChange={(e) => handleGlobalInputChange("alpha", e.target.value)}
+          placeholder="Enter global alpha value"
+        />
+      </label>
       {state.variables.map((variable, index) => (
-        <div className="InputsdeVar">
+        <div className="InputsdeVar" key={index}>
           <h2>Variable {index}:</h2>
-          <div key={index}>
+          <div>
             <label>
               Name: <br />
               <input
                 type="text"
-                value={variable.name}
+                value={variable.name || ""}
                 onChange={(e) =>
                   handleVariableChange(index, "name", e.target.value)
                 }
@@ -100,7 +124,7 @@ function VariableForm() {
               Unit: <br />
               <input
                 type="text"
-                value={variable.unit}
+                value={variable.unit || ""}
                 onChange={(e) =>
                   handleVariableChange(index, "unit", e.target.value)
                 }
@@ -111,7 +135,7 @@ function VariableForm() {
               Max: <br />
               <input
                 type="number"
-                value={variable.maxValue}
+                value={variable.maxValue || ""}
                 onChange={(e) =>
                   handleVariableChange(index, "maxValue", e.target.value)
                 }
@@ -122,7 +146,7 @@ function VariableForm() {
               Min: <br />
               <input
                 type="number"
-                value={variable.minValue}
+                value={variable.minValue || ""}
                 onChange={(e) =>
                   handleVariableChange(index, "minValue", e.target.value)
                 }
@@ -133,22 +157,11 @@ function VariableForm() {
               Delta: <br />
               <input
                 type="number"
-                value={variable.delta}
+                value={variable.delta || ""}
                 onChange={(e) =>
                   handleVariableChange(index, "delta", e.target.value)
                 }
                 placeholder="0.1" // <-- added placeholder
-              />
-            </label>
-            <label>
-              Alpha: <br />
-              <input
-                type="number"
-                value={variable.alpha}
-                onChange={(e) =>
-                  handleVariableChange(index, "alpha", e.target.value)
-                }
-                placeholder="0.5" // <-- added placeholder
               />
             </label>
           </div>
@@ -165,6 +178,14 @@ function VariableForm() {
           Export as TXT
         </button>
       </div>
+
+      {response && (
+            <div className="response-data">
+                <h2>Received Data:</h2>
+                <pre>{JSON.stringify(response, null, 2)}</pre>
+            </div>
+        )}
+        
     </form>
   );
 }
