@@ -106,17 +106,19 @@ class FatorialPlan: #classe do planejamento fatorial
 
         for i in range(self.dimensions):
             plan[f"{self.parameter[i].name} Real"] = []
-        
-        for i in range(self.number_of_observations):
-            for j in range(len(self.center)):
-                plan.loc[i] = ["Central"] + (np.round(self.center[j], 3)).tolist() + (np.round(self.real_center[j]), 3).tolist()
-            
-            for j in range(len(self.cubic)):
-                plan.loc[i] = ["Cúbica"] + (np.round(self.cubic[j], 3)).tolist() + (np.round(self.real_cubic[j]), 3).tolist()
 
-            for j in range(len(self.axial)):
-                plan.loc[i] = ["Axial"] + (np.round(self.axial[j], 3)).tolist() + (np.round(self.real_axial[j]), 3).tolist()
-            
+        # Adding Center points
+        for j in range(len(self.center)):
+            plan.loc[len(plan)] = ["Central"] + np.round(self.center[j], 3).tolist() + np.round(self.real_center[j], 3).tolist()
+
+        # Adding Cubic points
+        for j in range(len(self.cubic)):
+            plan.loc[len(plan)] = ["Cúbica"] + np.round(self.cubic[j], 3).tolist() + np.round(self.real_cubic[j], 3).tolist()
+
+        # Adding Axial points
+        for j in range(len(self.axial)):
+            plan.loc[len(plan)] = ["Axial"] + np.round(self.axial[j], 3).tolist() + np.round(self.real_axial[j], 3).tolist()
+
         return plan
 
 class FatorialPlanPrompts:
@@ -149,9 +151,9 @@ def fatorial_plan_test(fatorial_plan): #testa o alfa
         
     for i in range(len(fatorial_plan.parameter)):
         if fatorial_plan.alpha > encode(fatorial_plan.parameter[i], fatorial_plan.parameter[i].upper_limit):
-            return_error.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {fatorial_plan.parameters[i].name}, para que o valor codificado do limite superior de {fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
+            return_error.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou aumente o do limite superior de {fatorial_plan.parameter[i].name}, para que o valor codificado do limite superior de {fatorial_plan.parameter[i].name} esteja a pelo menos um alfa de distância do centro.")
 
         if fatorial_plan.alpha > - encode(fatorial_plan.parameter[i], fatorial_plan.parameter[i].lower_limit):
-                return_error.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {fatorial_plan.parameters[i].name}, para que o valor codificado do limite inferior de {fatorial_plan.parameters[i].name} esteja a pelo menos um alfa de distância do centro.")
+                return_error.append(f"O valor de alfa inserido foi grande demais. Diminua o valor de alfa, ou diminua o do limite inferior de {fatorial_plan.parameter[i].name}, para que o valor codificado do limite inferior de {fatorial_plan.parameter[i].name} esteja a pelo menos um alfa de distância do centro.")
         
     return return_error

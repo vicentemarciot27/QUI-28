@@ -1,18 +1,23 @@
 import React, { useState } from "react";
 import "./Parametros.css";
+import { renderTable } from "./DataTable";
 
 import axios from "axios";
 
 function VariableForm() {
   const [state, setState] = useState({
     numVariables: 0,
-    alpha: 0,
+    alpha: 1,
     variables: [],
     has_integer: false,
   });
 
   const [response, setResponse] = useState(null);
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [tableData, setTableData] = useState(null);
 
+
+  // HANDLE CHANGES FUNCTIONS
   // Handle global inputs (like alpha)
   function handleGlobalInputChange(field, value) {
     setState({
@@ -21,20 +26,42 @@ function VariableForm() {
     });
   }
 
+  function getRandomValue(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
   // Generates new variables from changing the number of variables
   function handleNumVariablesChange(e) {
-    const numVariables = e.target.value;
+    const numVariables = parseInt(e.target.value, 10);
+    const currentVariables = state.variables;
+    let newVariables;
+
+    if (numVariables > currentVariables.length) {
+      // If the new count is greater, append new variables
+      newVariables = [
+        ...currentVariables,
+        ...Array.from(
+          { length: numVariables - currentVariables.length },
+          () => ({
+            name: `Variable${Math.floor(getRandomValue(1, 100))}`, // Random name from "Variable1" to "Variable99"
+            unit: `Unit${Math.floor(getRandomValue(1, 10))}`, // Random unit from "Unit1" to "Unit9"
+            value: `${getRandomValue(1, 10).toFixed(2)}`, // Random value between 1 and 10 with 2 decimal places
+            maxValue: "10",
+            minValue: "0",
+            delta: `${getRandomValue(0.1, 1).toFixed(2)}`, // Random delta between 0.1 and 1 with 2 decimal places
+            alpha: state.alpha,
+          })
+        ),
+      ];
+    } else {
+      // If the new count is less, slice the array to the new count
+      newVariables = currentVariables.slice(0, numVariables);
+    }
+
     setState({
+      ...state,
       numVariables,
-      variables: Array.from({ length: numVariables }, () => ({
-        name: "",
-        unit: "",
-        value: "",
-        maxValue: "",
-        minValue: "",
-        delta: "",
-        alpha: "",
-      })),
+      variables: newVariables,
     });
   }
 
@@ -48,20 +75,32 @@ function VariableForm() {
     });
   }
 
+  // CORE FUNCTIONS
   // Handle form submission
   async function handleSubmit(e) {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/submit", state);
-      setResponse(response.data); // set the response data to the state
+      const response = await axios.post(
+        "http://localhost:5000/submit_param",
+        state
+      );
+      setResponse(response.data);
+      setTableData(response.data);
+      setErrorMessages([]); // Clear any previous errors on successful call
     } catch (error) {
+      if (error.response && error.response.data && error.response.data.errors) {
+        // Backend returned an array of error messages
+        setErrorMessages(error.response.data.errors);
+      } else {
+        // Some other error like network failure
+        setErrorMessages(["An error occurred while processing your request."]);
+      }
       console.error(error);
     }
   }
-
   // Export as JSON
   function exportAsJSON() {
-    const blob = new Blob([JSON.stringify(state)], {
+    const blob = new Blob([JSON.stringify(response.data)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
@@ -74,7 +113,7 @@ function VariableForm() {
 
   // Export as TXT
   function exportAsTXT() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], {
+    const blob = new Blob([JSON.stringify(response.data, null, 2)], {
       type: "text/plain",
     });
     const url = URL.createObjectURL(blob);
@@ -204,7 +243,16 @@ function VariableForm() {
       {response && (
         <div className="response-data">
           <h2>Received Data:</h2>
-          <pre>{JSON.stringify(response, null, 2)}</pre>
+          <p>{renderTable(tableData)}</p>
+        </div>
+      )}
+      {errorMessages.length > 0 && (
+        <div className="error-messages">
+          {errorMessages.map((errorMessage, index) => (
+            <div key={index} className="error-message">
+              {errorMessage}
+            </div>
+          ))}
         </div>
       )}
     </form>

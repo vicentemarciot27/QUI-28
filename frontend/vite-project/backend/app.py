@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)  # Handle CORS
 
 
-@app.route("/submit", methods=["POST"])
+@app.route("/submit_param", methods=["POST"])
 def submit():
     data = request.json
     variables_data = data["variables"]
@@ -15,7 +15,13 @@ def submit():
 
     for variable in variables_data:
         param = Parameter(
-            # ... (existing parameter creation code) ...
+            name=variable["name"],
+            unit=variable["unit"],
+            is_integer=False,  # Assuming all are float for now. Modify as needed.
+            center=float(variable["value"]),
+            lower_limit=float(variable["minValue"]),
+            upper_limit=float(variable["maxValue"]),
+            delta=float(variable["delta"]),
         )
         parameters.append(param)
 
