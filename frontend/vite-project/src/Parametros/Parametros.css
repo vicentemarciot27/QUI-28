@@ -46,3 +46,10 @@
 #Parametros .SendBtn:hover {
   background-color: #0b08c0; /* Darker green background on hover */
 }
+
+#Parametros .error-message{
+  color: red;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0;
+}
