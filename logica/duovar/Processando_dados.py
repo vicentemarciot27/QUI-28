@@ -1,7 +1,6 @@
 import numpy as np
 import scipy as sp
 from scipy.optimize import minimize
-from scipy.optimize import maximize
 import pandas as pd
 import matplotlib.pyplot as plt
 import io
@@ -14,27 +13,21 @@ from math import ceil
 from math import sqrt
 
 class LinearModel: #classe do modelo linear
-    def __init__(self, data_frame, parameters_list):
-        self.paramter = parameters_list
-        
-        parameter_name = []
-        for i in range(self.number_of_parameters):
-            parameter_name.append(self.paramter[i].name)
-
-        self.data_plan = data_frame.sort_values(by=parameter_name)
-
+    def __init__(self, data_frame):
+        self.column = data_frame.columns
+        self.data_plan = data_frame.sort_values(by=self.column)
         self.number_of_observations = len(self.data_plan)
-        self.number_of_parameters = len(self.parameter)
-        self.number_of_levels = self.data_plan[self.paramter[0].name].nunique()
+        self.number_of_parameters = len(self.column) - 1
+        self.number_of_levels = self.data_plan[self.column[0]].nunique()
         self.number_of_coefficients = 1 + self.number_of_parameters
 
-        self.response_matrix = self.data_plan["Resposta"].values
+        self.response_matrix = self.data_plan[self.column[-1]].values
 
         matrix = []
         for i in range(self.number_of_observations):
             matrix.append([1])
             for j in range(self.number_of_parameters):
-                matrix[i].append(self.data_plan.at[i, self.parameter[j].name])
+                matrix[i].append(self.data_plan.at[i, self.column[j]])
 
         self.planning_matrix = np.array(matrix)
         self.coefficients_matrix = (np.linalg.inv(np.transpose(self.planning_matrix)@self.planning_matrix))@np.transpose(self.planning_matrix)@self.response_matrix
@@ -48,7 +41,7 @@ class LinearModel: #classe do modelo linear
         self.SQr = np.sum(np.square(self.residuals_matrix))
         self.MQr = self.SQr/(self.number_of_observations - self.number_of_coefficients)
 
-        no_response = self.data_plan.drop(columns=["Resposta"])
+        no_response = self.data_plan.drop(columns=[self.column[-1]])
         reference_line = no_response.loc[0]
         sum_i = [0]
         number_i = [0]
@@ -65,7 +58,7 @@ class LinearModel: #classe do modelo linear
                 average_i.append(0)
                 i += 1
             
-            sum_i[i] += self.data_plan.loc[j, "Resposta"]
+            sum_i[i] += self.data_plan.loc[j, self.column[-1]]
             number_i[i] += 1
 
         self.SQfaj = 0
@@ -118,68 +111,62 @@ class LinearModel: #classe do modelo linear
         fig = plt.figure()
         
         if(self.number_of_parameters == 1):
-            x = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
+            x = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
             y = self.coefficients_matrix[0] + x*self.coefficients_matrix[1]
 
-            plt.scatter(self.data_plan[self.parameter[0].name], self.data_plan["Resposta"])
+            plt.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[-1]])
             plt.plot(x, y)
-            plt.xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
-            plt.ylabel("Resposta")
-            plt.title(f"Resposta em função de {self.parameter[0].name}")
+            plt.xlabel(f"{self.column[0]}")
+            plt.ylabel(self.column[-1])
+            plt.title(f"{self.column[-1]} em função de {self.column[0]}")
             
         elif(self.number_of_parameters == 2):
-            x_lin = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
-            y_lin = np.linspace(floor(self.data_plan[self.paramter[1].name].min()), ceil(self.data_plan[self.paramter[1].name].max()), 100)
+            x_lin = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
+            y_lin = np.linspace(floor(self.data_plan[self.column[1]].min()), ceil(self.data_plan[self.column[1]].max()), 100)
 
             x, y = np.meshgrid(x_lin, y_lin)
             z = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2]
 
             ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(self.data_plan[self.parameter[0].name], self.data_plan[self.parameter[1].name], self.data_plan["Resposta"])
+            ax.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[1]], self.data_plan[self.column[-1]])
             ax.plot_surface(x, y, z, cmap='viridis')
-            ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
-            ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
-            ax.set_zlabel("Resposta")
-            ax.set_title(f"Resposta em função de {self.parameter[0].name} e {self.parameter[1].name}")
+            ax.set_xlabel(f"{self.column[0]}")
+            ax.set_ylabel(f"{self.column[1]}")
+            ax.set_zlabel(self.column[-1])
+            ax.set_title(f"{self.column[-1]} em função de {self.column[0]} e {self.column[1]}")
 
         elif(self.number_of_parameters == 3):
-            x_lin = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
-            y_lin = np.linspace(floor(self.data_plan[self.paramter[1].name].min()), ceil(self.data_plan[self.paramter[1].name].max()), 100)
-            z_lin = np.linspace(floor(self.data_plan[self.paramter[2].name].min()), ceil(self.data_plan[self.paramter[2].name].max()), 100)
+            x_lin = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
+            y_lin = np.linspace(floor(self.data_plan[self.column[1]].min()), ceil(self.data_plan[self.column[1]].max()), 100)
+            z_lin = np.linspace(floor(self.data_plan[self.column[2]].min()), ceil(self.data_plan[self.column[2]].max()), 100)
 
             x, y, z = np.meshgrid(x_lin, y_lin, z_lin)
             colors = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2] + z*self.coefficients_matrix[3]
 
             ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(self.data_plan[self.parameter[0].name], self.data_plan[self.parameter[1].name], self.data_plan[self.parameter[2].name])
+            ax.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[1]], self.data_plan[self.column[2]])
             plot_surface = ax.plot_surface(x, y, z, c=colors, cmap='viridis')
             cbar = plt.colorbar(plot_surface)
-            ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
-            ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
-            ax.set_zlabel(f"{self.parameter[2].name} ({self.parameter[2].unit})")
-            cbar.set_label("Resposta")
-            ax.set_title(f"Resposta em função de {self.parameter[0].name}, {self.parameter[1].name} e {self.parameter[2].name}")
+            ax.set_xlabel(f"{self.column[0]}")
+            ax.set_ylabel(f"{self.column[1]}")
+            ax.set_zlabel(f"{self.column[2]}")
+            cbar.set_label(self.column[-1])
+            ax.set_title(f"{self.column[-1]} em função de {self.column[0]}, {self.column[1]} e {self.column[2]}")
         
         buf = io.BytesIO()
         FigureCanvas(fig).print_png(buf)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
 
 class QuadraticModel: #classe do modelo quadratico
-    def __init__(self, data_frame, parameters_list):
-        self.paramter = parameters_list
-        
-        parameter_name = []
-        for i in range(self.number_of_parameters):
-            parameter_name.append(self.paramter[i].name)
-
-        self.data_plan = data_frame.sort_values(by=parameter_name)
-
+    def __init__(self, data_frame):
+        self.column = data_frame.columns
+        self.data_plan = data_frame.sort_values(by=self.column)
         self.number_of_observations = len(self.data_plan)
-        self.number_of_parameters = len(self.parameter)
-        self.number_of_levels = self.data_plan[self.paramter[0].name].nunique()
+        self.number_of_parameters = len(self.column) - 1
+        self.number_of_levels = self.data_plan[self.column[0]].nunique()
         self.number_of_coefficients = 1 + 2*self.number_of_parameters + (self.number_of_parameters*(self.number_of_parameters - 1))/2
 
-        self.response_matrix = self.data_plan["Resposta"].values
+        self.response_matrix = self.data_plan[self.column[-1]].values
 
         matrix = []
         cross_terms = (self.number_of_parameters*(self.number_of_parameters - 1))/2
@@ -187,15 +174,15 @@ class QuadraticModel: #classe do modelo quadratico
         for i in range(self.number_of_observations):
             matrix.append([1])
             for j in range(self.number_of_parameters):
-                matrix[i].append(self.data_plan.at[i, self.parameter[j].name])
+                matrix[i].append(self.data_plan.at[i, self.column[j]])
 
             for j in range(self.number_of_parameters):
-                matrix[i].append(self.data_plan.at[i, self.parameter[j].name]**2)
+                matrix[i].append(self.data_plan.at[i, self.column[j]]**2)
 
             for j in range(cross_terms):
                 for k in range(cross_terms):
                     if(k>j):
-                        matrix[i].append(self.data_plan.at[i, self.parameter[j].name] * self.data_plan.loc[i, self.parameter[k].name])
+                        matrix[i].append(self.data_plan.at[i, self.column[j]] * self.data_plan.loc[i, self.column[k]])
 
         self.planning_matrix = np.array(matrix)
         self.coefficients_matrix = (np.linalg.inv(np.transpose(self.planning_matrix)@self.planning_matrix))@np.transpose(self.planning_matrix)@self.response_matrix
@@ -209,7 +196,7 @@ class QuadraticModel: #classe do modelo quadratico
         self.SQr = np.sum(np.square(self.residuals_matrix))
         self.MQr = self.SQr/(self.number_of_observations - self.number_of_coefficients)
 
-        no_response = self.data_plan.drop(columns=["Resposta"])
+        no_response = self.data_plan.drop(columns=[self.column[-1]])
         reference_line = no_response.loc[0]
         sum_i = [0]
         number_i = [0]
@@ -226,7 +213,7 @@ class QuadraticModel: #classe do modelo quadratico
                 average_i.append(0)
                 i += 1
             
-            sum_i[i] += self.data_plan.loc[j, "Resposta"]
+            sum_i[i] += self.data_plan.loc[j, self.column[-1]]
             number_i[i] += 1
 
         self.SQfaj = 0
@@ -306,47 +293,47 @@ class QuadraticModel: #classe do modelo quadratico
         fig = plt.figure()
         
         if(self.number_of_parameters == 1):
-            x = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
+            x = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
             y = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + (x**2)*self.coefficients_matrix[2]
 
-            plt.scatter(self.data_plan[self.parameter[0].name], self.data_plan["Resposta"])
+            plt.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[-1]])
             plt.plot(x, y)
-            plt.xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
-            plt.ylabel("Resposta")
-            plt.title(f"Resposta em função de {self.parameter[0].name}")
+            plt.xlabel(f"{self.column[0]}")
+            plt.ylabel(self.column[-1])
+            plt.title(f"{self.column[-1]} em função de {self.column[0]}")
 
         elif(self.number_of_parameters == 2):
-            x_lin = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
-            y_lin = np.linspace(floor(self.data_plan[self.paramter[1].name].min()), ceil(self.data_plan[self.paramter[1].name].max()), 100)
+            x_lin = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
+            y_lin = np.linspace(floor(self.data_plan[self.column[1]].min()), ceil(self.data_plan[self.column[1]].max()), 100)
 
             x, y = np.meshgrid(x_lin, y_lin)
             z = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2] + (x**2)*self.coefficients_matrix[3] + (y**2)*self.coefficients_matrix[4] + (x*y)*self.coefficients_matrix[5]
 
             ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(self.data_plan[self.parameter[0].name], self.data_plan[self.parameter[1].name], self.data_plan["Resposta"])
+            ax.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[1]], self.data_plan[self.column[-1]])
             ax.plot_surface(x, y, z, cmap='viridis')
-            ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
-            ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
-            ax.set_zlabel("Resposta")
-            ax.set_title(f"Resposta em função de {self.parameter[0].name} e {self.parameter[0].name}")
+            ax.set_xlabel(f"{self.column[0]}")
+            ax.set_ylabel(f"{self.column[1]}")
+            ax.set_zlabel(self.column[-1])
+            ax.set_title(f"{self.column[-1]} em função de {self.column[0]} e {self.column[0]}")
 
         elif(self.number_of_parameters == 3):
-            x_lin = np.linspace(floor(self.data_plan[self.paramter[0].name].min()), ceil(self.data_plan[self.paramter[0].name].max()), 100)
-            y_lin = np.linspace(floor(self.data_plan[self.paramter[1].name].min()), ceil(self.data_plan[self.paramter[1].name].max()), 100)
-            z_lin = np.linspace(floor(self.data_plan[self.paramter[2].name].min()), ceil(self.data_plan[self.paramter[2].name].max()), 100)
+            x_lin = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
+            y_lin = np.linspace(floor(self.data_plan[self.column[1]].min()), ceil(self.data_plan[self.column[1]].max()), 100)
+            z_lin = np.linspace(floor(self.data_plan[self.column[2]].min()), ceil(self.data_plan[self.column[2]].max()), 100)
 
             x, y, z = np.meshgrid(x_lin, y_lin, z_lin)
             colors = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2] + z*self.coefficients_matrix[3] + (x**2)*self.coefficients_matrix[4] + (y**2)*self.coefficients_matrix[5] + (z**2)*self.coefficients_matrix[6] + (x*y)*self.coefficients_matrix[7] + (x*z)*self.coefficients_matrix[8] + (y*z)*self.coefficients_matrix[9] 
 
             ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(self.data_plan[self.parameter[0].name], self.data_plan[self.parameter[1].name], self.data_plan[self.parameter[2].name])
+            ax.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[1]], self.data_plan[self.column[2]])
             plot_surface = ax.plot_surface(x, y, z, c=colors, cmap='viridis')
             cbar = plt.colorbar(plot_surface)
-            ax.set_xlabel(f"{self.parameter[0].name} ({self.parameter[0].unit})")
-            ax.set_ylabel(f"{self.parameter[1].name} ({self.parameter[1].unit})")
-            ax.set_zlabel(f"{self.parameter[2].name} ({self.parameter[2].unit})")
-            cbar.set_label("Resposta")
-            ax.set_title(f"Resposta em função de {self.parameter[0].name}, {self.parameter[1].name} e {self.parameter[2].name}")
+            ax.set_xlabel(f"{self.column[0]}")
+            ax.set_ylabel(f"{self.column[1]}")
+            ax.set_zlabel(f"{self.column[2]}")
+            cbar.set_label(self.column[-1])
+            ax.set_title(f"{self.column[-1]} em função de {self.column[0]}, {self.column[1]} e {self.column[2]}")
         
         buf = io.BytesIO()
         FigureCanvas(fig).print_png(buf)
@@ -388,30 +375,41 @@ def overall_f_test(model): #realiza o teste F (talvez seja melhor so devolver a 
 def optimal_point(model, optimization_type): #encontra o ponto ótimo do modelo
     initial_point = []
     for i in range(model.number_of_parameters):
-        initial_point.append(model.data_plan.at[0, model.parameter[i].name])
+        initial_point.append(model.data_plan.at[0, model.column[i]])
 
     if(optimization_type):
-        return maximize(model.expected_response(), initial_point)
+        return minimize(-model.expected_response(), initial_point)
     else:
         return minimize(model.expected_response(), initial_point)
 
-def data_plan_plot(data_frame, parameter): #plota o gráfico dos dados coletados
-    dimensions = len(parameter)
+def data_plan_plot(data_frame): #plota o gráfico dos dados coletados
+    column = data_frame.columns
+    dimensions = len(column) - 1
     fig = plt.figure()
     
     if(dimensions == 1):
-        plt.scatter(data_frame[parameter[0].name], data_frame["Resposta"])
-        plt.xlabel(f"{parameter[0].name} ({parameter[0].unit})")
-        plt.ylabel("Resposta")
-        plt.title(f"Resposta em função de {parameter[0].name}")
+        plt.scatter(data_frame[column[0]], data_frame[column[-1]])
+        plt.xlabel(f"{column[0]}")
+        plt.ylabel(column[-1])
+        plt.title(f"{column[-1]} em função de {column[0]}")
 
     elif(dimensions == 2):
         ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(data_frame[parameter[0].name], data_frame[parameter[1].name], data_frame["Resposta"])
-        ax.set_xlabel(f"{parameter[0].name} ({parameter[0].unit})")
-        ax.set_ylabel(f"{parameter[1].name} ({parameter[1].unit})")
-        ax.set_zlabel("Resposta")
-        ax.set_title(f"Resposta em função de {parameter[0].name} e {parameter[0].name}")
+        ax.scatter(data_frame[column[0]], data_frame[column[1]], data_frame[column[-1]])
+        ax.set_xlabel(f"{column[0]}")
+        ax.set_ylabel(f"{column[1]}")
+        ax.set_zlabel(column[-1])
+        ax.set_title(f"{column[-1]} em função de {column[0]} e {column[1]}")
+
+    elif(dimensions == 3):
+        ax = fig.add_subplot(111, projection='3d')
+        scatter = ax.scatter(data_frame[column[0]], data_frame[column[1]], data_frame[column[2]], c=data_frame[column[-1]], cmap="viridis", marker="o")
+        cbar = plt.colorbar(scatter)
+        ax.set_xlabel(f"{column[0]}")
+        ax.set_ylabel(f"{column[1]}")
+        ax.set_zlabel(f"{column[2]}")
+        cbar.set_label(column[-1])
+        ax.set_title(f"{column[-1]} em função de {column[0]}, {column[1]} e {column[2]}")
     
     buf = io.BytesIO()
     FigureCanvas(fig).print_png(buf)
@@ -420,9 +418,9 @@ def data_plan_plot(data_frame, parameter): #plota o gráfico dos dados coletados
 def residuals_expectations_plot(model): #plota o gráfico dos resíduos pela resposta prevista
     fig = plt.figure()
     plt.scatter(model.expected_response_matrix, model.residuals_matrix)
-    plt.xlabel("Resposta prevista")
+    plt.xlabel(f"{model.column[-1]} prevista")
     plt.ylabel("Resíduos")
-    plt.title("Resíduos em fução das respostas previstas")
+    plt.title(f"Resíduos em fução da {model.column[-1]} prevista")
 
     buf = io.BytesIO()
     FigureCanvas(fig).print_png(buf)
@@ -432,10 +430,10 @@ def residuals_parameters_plot(model): #cria grid de gráficos dos resíduos por 
     fig, axs = plt.subplots(ceil(sqrt(model.number_of_parameters)), ceil(sqrt(model.number_of_parameters)), figsize=(10, 4))
 
     for i in range(model.number_of_parameters):
-        axs[i].scatter(model.data_plan[model.parameter[i].name], model.residuals_matrix)
-        axs[i].set_xlabel(f"{model.parameter[i].name} ({model.parameter[i].unit})")
+        axs[i].scatter(model.data_plan[model.column[i]], model.residuals_matrix)
+        axs[i].set_xlabel(f"{model.column[i]}")
         axs[i].set_ylabel("Resíduos")
-        axs[i].set_title(f"Resíduos em função de {model.parameter[i].name} e {model.parameter[i].name}")
+        axs[i].set_title(f"Resíduos em função de {model.column[i]}")
 
     plt.tight_layout()
 
