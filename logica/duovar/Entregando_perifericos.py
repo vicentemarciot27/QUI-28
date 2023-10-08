@@ -97,7 +97,7 @@ class FatorialPlan: #classe do planejamento fatorial
 
         self.number_of_observations = len(self.center) + len(self.cubic) + len(self.axial)
 
-    def return_plan(self):
+    def return_plan(self): #retorna o planejamento
         plan = pd.DataFrame()
 
         plan["Componente"] = []
@@ -118,22 +118,31 @@ class FatorialPlan: #classe do planejamento fatorial
                 plan.loc[i] = ["Axial"] + (np.round(self.axial[j], 3)).tolist() + (np.round(self.real_axial[j]), 3).tolist()
             
         return plan
+    
+    def randomize_plan(self, plan, repetitions): #entrega o planejamento em ordem de coleta aleatória
+        randomized_plan = plan
+        randomized_plan.drop(columns=["Componente"])
 
-class FatorialPlanPrompts:
+        i = 1
+        while i < repetitions:
+            for j in range(len(self.center)):
+                randomized_plan.loc[len(randomized_plan)] = (np.round(self.center[j], 3)).tolist() + (np.round(self.real_center[j]), 3).tolist()
+            i+=1
+        
+        new_column = []
+
+        for i in range(len(randomized_plan)):
+            new_column.append(i+1)
+
+        randomized_plan.insert(0, "Ensaio", new_column)
+        
+        return randomized_plan.sample(frac=1)
+
+class FatorialPlanPrompts: #classe de prompts para as caixas do planejamento fatorial
     alpha_prompt = "Informe o valor de alfa, usado para a escolha dos pontos axiais do planejamento fatorial."
     center_info = "Este é o ponto central do planejamento fatorial. Ele assim é chamado pois o planejamento é construido em volta dele. Devem ser feitas de 3 a 5 repetições do experimento no ponto central, pois ele será importante para estimar a variância dos dados."
     cubic_info = "Esses são os pontos cúbicos do planejamento fatorial. Eles assim são chamados pois no espaço de planejamento eles formam um quadrado (para 2 parâmetros), um cubo (para 3 parâmetros), ou um hypercubo (para mais de 3 parâmetros)."
     axial_info = "Esses são os pontos axiais do planejamento fatorial. Eles assim são chamados pois ficam sobre os eixos do espaço de planejamento."
-
-def return_real_plan(fatorial_plan, plan): #possivelmente substituido pelo DataFrame
-    real_plan = []
-
-    for i in range(len(plan)):
-        real_plan.append([])
-        for j in range(fatorial_plan.dimensions):
-            real_plan[i].append(decode(fatorial_plan.parameter[j], plan[i][j]))
-
-    return np.round(real_plan, 3)
 
 def fatorial_plan_test(fatorial_plan): #testa o alfa
     return_error = []
