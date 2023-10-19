@@ -24,6 +24,7 @@
   #Modelagem input[type="text"],
   #Modelagem input[type="number"] {
     border: 1px solid #bdbdbd;
+    background-color: black;
     padding: 5px;
     font-size: 14px;
     border-radius: 3px;

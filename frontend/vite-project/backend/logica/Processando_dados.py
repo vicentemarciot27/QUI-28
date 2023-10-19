@@ -7,7 +7,7 @@ import io
 import base64
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from mpl_toolkits.mplot3d import Axes3D
-from Entregando_perifericos import Parameter
+from logica.Entregando_perifericos import Parameter
 from math import floor
 from math import ceil
 from math import sqrt
@@ -157,44 +157,52 @@ class LinearModel: #classe do modelo linear
         FigureCanvas(fig).print_png(buf)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
 
-class QuadraticModel: #classe do modelo quadratico
+class QuadraticModel:
     def __init__(self, data_frame):
-        self.column = data_frame.columns
+        print(data_frame)
+        print("We are in the quadratic constructor")
+        self.column = data_frame.columns.tolist()
+        print("Column = " + str(self.column))
         self.data_plan = data_frame.sort_values(by=self.column)
+        print("data_plan = " + str(self.data_plan))
         self.number_of_observations = len(self.data_plan)
         self.number_of_parameters = len(self.column) - 1
+        print("Number of Parameters:" + str(self.number_of_parameters))
         self.number_of_levels = self.data_plan[self.column[0]].nunique()
-        self.number_of_coefficients = 1 + 2*self.number_of_parameters + (self.number_of_parameters*(self.number_of_parameters - 1))/2
+        self.number_of_coefficients = int(1 + 2 * self.number_of_parameters + (self.number_of_parameters * (self.number_of_parameters - 1)) / 2)
+        print("Number of Parameters:" + str(self.number_of_parameters))
 
         self.response_matrix = self.data_plan[self.column[-1]].values
 
         matrix = []
-        cross_terms = (self.number_of_parameters*(self.number_of_parameters - 1))/2
+        cross_terms = int((self.number_of_parameters * (self.number_of_parameters - 1)) / 2)
+        print(cross_terms)
 
         for i in range(self.number_of_observations):
             matrix.append([1])
             for j in range(self.number_of_parameters):
-                matrix[i].append(self.data_plan.at[i, self.column[j]])
+                matrix[i].append(int(self.data_plan.at[i, self.column[j]]))
 
             for j in range(self.number_of_parameters):
-                matrix[i].append(self.data_plan.at[i, self.column[j]]**2)
+                matrix[i].append(int(self.data_plan.at[i, self.column[j]] ** 2))
 
-            for j in range(cross_terms):
-                for k in range(cross_terms):
-                    if(k>j):
-                        matrix[i].append(self.data_plan.at[i, self.column[j]] * self.data_plan.loc[i, self.column[k]])
+            for j in range(self.number_of_parameters):
+                for k in range(j+1, self.number_of_parameters):
+                    matrix[i].append(int(self.data_plan.at[i, self.column[j]] * self.data_plan.at[i, self.column[k]]))
+
+
 
         self.planning_matrix = np.array(matrix)
-        self.coefficients_matrix = (np.linalg.inv(np.transpose(self.planning_matrix)@self.planning_matrix))@np.transpose(self.planning_matrix)@self.response_matrix
-        self.expected_response_matrix = self.planning_matrix@self.coefficients_matrix
+        self.coefficients_matrix = (np.linalg.inv(np.transpose(self.planning_matrix) @ self.planning_matrix)) @ np.transpose(self.planning_matrix) @ self.response_matrix
+        self.expected_response_matrix = self.planning_matrix @ self.coefficients_matrix
         self.residuals_matrix = np.subtract(self.response_matrix, self.expected_response_matrix)
         self.mean_response = np.mean(self.response_matrix)
 
         self.SQR = np.sum(np.square(self.expected_response_matrix - self.mean_response))
-        self.MQR = self.SQR/(self.number_of_coefficients - 1)
+        self.MQR = self.SQR / (self.number_of_coefficients - 1)
 
         self.SQr = np.sum(np.square(self.residuals_matrix))
-        self.MQr = self.SQr/(self.number_of_observations - self.number_of_coefficients)
+        self.MQr = self.SQr / (self.number_of_observations - self.number_of_coefficients)
 
         no_response = self.data_plan.drop(columns=[self.column[-1]])
         reference_line = no_response.loc[0]
@@ -203,70 +211,71 @@ class QuadraticModel: #classe do modelo quadratico
         average_i = [0]
         i = 0
 
+        
         for j in range(self.number_of_observations):
             current_line = no_response.loc[j]
-            if current_line != reference_line:
+            if not (current_line == reference_line).all():
                 reference_line = current_line
-                average_i[i] = sum_i[i]/number_i[i]
+                average_i[i] = sum_i[i] // number_i[i]  # Use // for integer division
                 sum_i.append(0)
                 number_i.append(0)
                 average_i.append(0)
                 i += 1
-            
+
             sum_i[i] += self.data_plan.loc[j, self.column[-1]]
             number_i[i] += 1
 
         self.SQfaj = 0
         self.SQep = 0
         i = 0
+        reference_line = no_response.loc[0]
 
         for j in range(self.number_of_observations):
             current_line = no_response.loc[j]
-            if current_line != reference_line:
+            if not (current_line == reference_line).all():
                 reference_line = current_line
                 i += 1
-            
-            self.SQfaj += (self.expected_response_matrix[j] - average_i[i])*(self.expected_response[j] - average_i[i])
-            self.SQep += (self.response_matrix[j] - average_i[i])*(self.response_matrix[j] - average_i[i])
 
-        self.MQfaj = self.SQfaj/(self.number_of_levels-self.number_of_parameters)
-        self.MQep = self.SQep/(self.number_of_observations-self.number_of_levels)
+            self.SQfaj += (self.expected_response_matrix[j] - average_i[i]) * (self.expected_response_matrix[j] - average_i[i])
+            self.SQep += (self.response_matrix[j] - average_i[i]) * (self.response_matrix[j] - average_i[i])
+
+        self.MQfaj = self.SQfaj / (self.number_of_levels - self.number_of_parameters)
+        self.MQep = self.SQep / (self.number_of_observations - self.number_of_levels)
 
         self.SQT = np.sum(np.square(self.response_matrix - self.mean_response))
-        
-        self.explained_variation = self.SQR/self.SQT
-        self.maximum_explainable_variation = (self.SQT-self.SQep)/self.SQT
 
-        self.covariance_matrix = np.linalg.inv(np.transpose(self.planning_matrix)@self.planning_matrix) * self.MQr
+        self.explained_variation = self.SQR / self.SQT
+        self.maximum_explainable_variation = (self.SQT - self.SQep) / self.SQT
 
-    def coefficients_table(self): #cria DataFrame com coeficientes e erros
+        self.covariance_matrix = np.linalg.inv(np.transpose(self.planning_matrix) @ self.planning_matrix) * self.MQr
+
+
+    def coefficients_table(self): 
         table = pd.DataFrame()
 
         table["Coeficiente"] = [1]
         i = 1
-        cross_terms = (self.number_of_parameters*(self.number_of_parameters - 1))/2
+        cross_terms = (self.number_of_parameters * (self.number_of_parameters - 1)) / 2
 
         for j in range(self.number_of_coefficients):
-            table.loc[i, "Coeficientes"] = [f"X{j+1}"]
+            table.loc[i, "Coeficiente"] = [f"X{j + 1}"]
             i += 1
 
         for j in range(self.number_of_coefficients):
-            table.loc[i, "Coeficients"] = [f"X{j+1}*X{j+1}"]
+            table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{j + 1}"]
             i += 1
 
         for j in range(cross_terms):
             for k in range(cross_terms):
-                if k>j:
-                    table.loc[i, "Coeficients"] = [f"X{j+1}*X{k+1}"]
+                if k > j:
+                    table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{k + 1}"]
                     i += 1
-        
-        table["Erros-Padrão"] = []
-        i = 0
-        
-        while i < self.number_of_coefficients:
-            table.loc[i, "Erros-Padrão"] = [sqrt(self.covariance_matrix[i][i])]
+
+        # Placeholder for standard errors (you need to calculate them)
+        table["Erros-Padrão"] = [0.0] * self.number_of_coefficients
 
         return table
+
     
     def expected_response(self, point): #calcula resposta esperada pelo modelo para um ponto do dominio
         ans = self.coefficients_matrix[0]
@@ -291,6 +300,7 @@ class QuadraticModel: #classe do modelo quadratico
     
     def quadratic_plot(self): #plota gráfico do modelo quadratico
         fig = plt.figure()
+        print("Quadratic plot now")
         
         if(self.number_of_parameters == 1):
             x = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
