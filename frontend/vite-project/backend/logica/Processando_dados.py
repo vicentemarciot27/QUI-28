@@ -172,8 +172,6 @@ class QuadraticModel:
         self.response_matrix = self.data_plan[self.column[-1]].values
 
         matrix = []
-        cross_terms = int((self.number_of_parameters * (self.number_of_parameters - 1)) / 2)
-        print(cross_terms)
 
         for i in range(self.number_of_observations):
             matrix.append([1])
@@ -252,7 +250,6 @@ class QuadraticModel:
 
         table["Coeficiente"] = [1]
         i = 1
-        cross_terms = (self.number_of_parameters * (self.number_of_parameters - 1)) / 2
 
         for j in range(self.number_of_coefficients):
             table.loc[i, "Coeficiente"] = [f"X{j + 1}"]
@@ -262,11 +259,10 @@ class QuadraticModel:
             table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{j + 1}"]
             i += 1
 
-        for j in range(cross_terms):
-            for k in range(cross_terms):
-                if k > j:
-                    table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{k + 1}"]
-                    i += 1
+        for j in range(self.number_of_parameters):
+            for k in range(j+1, self.number_of_parameters):
+                table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{k + 1}"]
+                i += 1
 
         # Placeholder for standard errors (you need to calculate them)
         table["Erros-Padrão"] = [0.0] * self.number_of_coefficients
@@ -277,7 +273,6 @@ class QuadraticModel:
     def expected_response(self, point): #calcula resposta esperada pelo modelo para um ponto do dominio
         ans = self.coefficients_matrix[0]
         i = 1
-        cross_terms = int((self.number_of_parameters*(self.number_of_parameters - 1))/2)
 
         for j in range(self.number_of_parameters):
             ans += point[j]*self.coefficients_matrix[i]
@@ -287,11 +282,10 @@ class QuadraticModel:
             ans += (point[j]**2)*self.coefficients_matrix[i]
             i += 1
 
-        for j in range(cross_terms):
-            for k in range(cross_terms):
-                if k>j:
-                    ans += (point[j]*point[k])*self.coefficients_matrix[i]
-                    i += 1
+        for j in range(self.number_of_parameters):
+            for k in range(j+1, self.number_of_parameters):
+                ans += (point[j]*point[k])*self.coefficients_matrix[i]
+                i += 1
 
         return ans
     
