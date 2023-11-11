@@ -9,6 +9,11 @@ const Modelagem = (props) => {
     data: [],
   });
   const [imageBase64, setImageBase64] = useState("");
+  const [maximize, setMaximize] = useState(false);
+  const [maxPoint, setMaxPoint] = useState([]);
+  const [anovaData, setAnovadata] = useState([]);
+  const [fTable, setFTable] = useState([]);
+  const [fstring, setFstring] = useState()
 
   const handleButtonClick = () => {
     // Update the points state when the button is clicked
@@ -33,20 +38,21 @@ const Modelagem = (props) => {
     // Get the two columns after the first and exclude the last one
     // Get columns 2, 3, and the last one
     const columnsOfInterest = [
-      points.columns[1],
-      points.columns[2],
+      points.columns[3],
+      points.columns[4],
       points.columns[points.columns.length - 1],
     ];
 
     // Get the corresponding data for those columns
     const dataOfInterest = points.data.map((row) => [
-      row[1],
-      row[2],
+      row[3],
+      row[4],
       row[row.length - 1],
     ]);
 
     // Convert points data to the desired format
     let formattedData = {
+      maximize: maximize,
       data_frame: {
         columns: columnsOfInterest,
         data: dataOfInterest,
@@ -58,6 +64,10 @@ const Modelagem = (props) => {
       .post("http://localhost:5000/submit_quadratic_model", formattedData)
       .then((response) => {
         setImageBase64(response.data.plot);
+        setMaxPoint(response.data.maxPoint);
+        setAnovadata(response.data.anovaTable);
+        setFTable(response.data.fTable);
+        setFstring(response.data.fstring)
       })
       .catch((error) => {
         console.error("There was an error processing the data:", error);
@@ -114,15 +124,75 @@ const Modelagem = (props) => {
           </table>
         </div>
       )}
+      <p>Maximizar? (Padrão é minimizar)</p>
+      <input
+        type="checkbox"
+        checked={maximize}
+        onChange={(event) => setMaximize(event.target.checked)}
+      />
+      <br />
       <button className="SendBtn" onClick={handleSendClick}>
         Processar dados
       </button>
       {imageBase64 && (
         <img
           src={`data:image/png;base64,${imageBase64}`}
+          style={{ width: 550, padding: "1rem" }}
           alt="Quadratic Plot"
         />
       )}
+      {maxPoint && <h3>O ponto de inflexão desejado é: {maxPoint}</h3>}
+      {anovaData && (
+        <div>
+          <h2>ANOVA Table</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Fonte de Variação</th>
+                <th>Soma Quadrática</th>
+                <th>Número de Graus de Liberdade</th>
+                <th>Média Quadrática</th>
+              </tr>
+            </thead>
+            <tbody>
+              {anovaData.map((row, index) => (
+                <tr key={index}>
+                  <td>{row["Fonte de Variação"]}</td>
+                  <td>{row["Soma Quadrática"]}</td>
+                  <td>{row["Número de Graus de Liberdade"]}</td>
+                  <td>{row["Média Quadrática"]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {fTable && (
+        <div>
+          <h2>F Table</h2>
+          <br />
+          <table>
+            <thead>
+              <tr>
+                <th>Parâmetro Estatístico</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fTable.map((row, index) => (
+                <tr key={index}>
+                  <td>{row["Parâmetro Estatístico"]}</td>
+                  <td>{row["Valor"]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {
+        fstring
+      }
+
     </div>
   );
 };

@@ -110,6 +110,8 @@ class FatorialPlan: #classe do planejamento fatorial
         # Adding Center points
         for j in range(len(self.center)):
             plan.loc[len(plan)] = ["Central"] + np.round(self.center[j], 3).tolist() + np.round(self.real_center[j], 3).tolist()
+            plan.loc[len(plan)] = ["Central"] + np.round(self.center[j], 3).tolist() + np.round(self.real_center[j], 3).tolist()
+            plan.loc[len(plan)] = ["Central"] + np.round(self.center[j], 3).tolist() + np.round(self.real_center[j], 3).tolist()
 
         # Adding Cubic points
         for j in range(len(self.cubic)):

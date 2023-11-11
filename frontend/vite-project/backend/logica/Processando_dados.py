@@ -162,15 +162,12 @@ class QuadraticModel:
         print(data_frame)
         print("We are in the quadratic constructor")
         self.column = data_frame.columns.tolist()
-        print("Column = " + str(self.column))
         self.data_plan = data_frame.sort_values(by=self.column)
         print("data_plan = " + str(self.data_plan))
         self.number_of_observations = len(self.data_plan)
         self.number_of_parameters = len(self.column) - 1
-        print("Number of Parameters:" + str(self.number_of_parameters))
         self.number_of_levels = self.data_plan[self.column[0]].nunique()
         self.number_of_coefficients = int(1 + 2 * self.number_of_parameters + (self.number_of_parameters * (self.number_of_parameters - 1)) / 2)
-        print("Number of Parameters:" + str(self.number_of_parameters))
 
         self.response_matrix = self.data_plan[self.column[-1]].values
 
@@ -280,7 +277,7 @@ class QuadraticModel:
     def expected_response(self, point): #calcula resposta esperada pelo modelo para um ponto do dominio
         ans = self.coefficients_matrix[0]
         i = 1
-        cross_terms = (self.number_of_parameters*(self.number_of_parameters - 1))/2
+        cross_terms = int((self.number_of_parameters*(self.number_of_parameters - 1))/2)
 
         for j in range(self.number_of_parameters):
             ans += point[j]*self.coefficients_matrix[i]
@@ -325,7 +322,7 @@ class QuadraticModel:
             ax.set_xlabel(f"{self.column[0]}")
             ax.set_ylabel(f"{self.column[1]}")
             ax.set_zlabel(self.column[-1])
-            ax.set_title(f"{self.column[-1]} em função de {self.column[0]} e {self.column[0]}")
+            ax.set_title(f"{self.column[-1]} em função de {self.column[0]} e {self.column[1]}")
 
         elif(self.number_of_parameters == 3):
             x_lin = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
@@ -355,7 +352,8 @@ def anova_table(model): #cria DataFrame com tabela ANOVA
     table["Fonte de Variação"] = ["Regressão", "Resíduos", "Falta de Ajuste", "Erro Puro", "Total"]
     table["Soma Quadrática"] = [model.SQR, model.SQr, model.SQfaj, model.SQep, model.SQT]
     table["Número de Graus de Liberdade"] = [model.number_of_coefficients - 1, model.number_of_observations - model.number_of_coefficients, model.number_of_levels - model.number_of_coefficients, model.number_of_observations - model.number_of_levels, model.number_of_observations - 1]
-    table["Média Quadrática"] = [model.MQR, model.MQr, model.MQfaj, model.MQep]
+    table["Média Quadrática"] = [model.MQR, model.MQr, model.MQfaj, model.MQep, ""]
+
 
     return table
 
@@ -388,9 +386,9 @@ def optimal_point(model, optimization_type): #encontra o ponto ótimo do modelo
         initial_point.append(model.data_plan.at[0, model.column[i]])
 
     if(optimization_type):
-        return minimize(-model.expected_response(), initial_point)
+        minimize(lambda x: -model.expected_response(x), initial_point)
     else:
-        return minimize(model.expected_response(), initial_point)
+        return minimize(model.expected_response, initial_point)
 
 def data_plan_plot(data_frame): #plota o gráfico dos dados coletados
     column = data_frame.columns
