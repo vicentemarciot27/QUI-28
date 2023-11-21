@@ -391,13 +391,19 @@ def overall_f_test(model): #realiza o teste F (talvez seja melhor so devolver a 
 
 def optimal_point(model, optimization_type = False): #encontra o ponto ótimo do modelo
     initial_point = []
+    
     for i in range(model.number_of_parameters):
         initial_point.append(model.data_plan.at[0, model.column[i]])
+        
+    # Exclude the last column by indexing to -1
+    columns_to_include = model.data_plan.columns[:-1]
+    # Generate bounds
+    bounds = [(model.data_plan[column].min(), model.data_plan[column].max()) for column in columns_to_include]
 
     if(optimization_type):
-        return minimize(lambda x: -model.expected_response(x), initial_point)
+        return minimize(lambda x: -model.expected_response(x), initial_point, bounds=bounds)
     else:
-        return minimize(model.expected_response, initial_point)
+        return minimize(model.expected_response, initial_point, bounds=bounds)
 
 def data_plan_plot(data_frame): #plota o gráfico dos dados coletados
     column = data_frame.columns

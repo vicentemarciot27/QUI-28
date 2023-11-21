@@ -22,7 +22,7 @@ test_point = [3.5, 850]  # Replace with a realistic test point from your domain
 expected_response = model.expected_response(test_point)
 print(f"Expected response at point {test_point}: {expected_response}")
 minimum = optimal_point(model)
-print(f"Minimum is: {minimum} " )
+print(f"Minimum is: {minimum.x} " )
 
 # Test quadratic_plot method (this will show the plot)
 print("Generating plot...")
