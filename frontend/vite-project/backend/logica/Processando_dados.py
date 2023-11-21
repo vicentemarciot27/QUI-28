@@ -162,7 +162,7 @@ class QuadraticModel:
         print(data_frame)
         print("We are in the quadratic constructor")
         self.column = data_frame.columns.tolist()
-        self.data_plan = data_frame.sort_values(by=self.column)
+        self.data_plan = data_frame.sort_values(by=self.column).reset_index(drop=True)
         print("data_plan = " + str(self.data_plan))
         self.number_of_observations = len(self.data_plan)
         self.number_of_parameters = len(self.column) - 1
@@ -176,22 +176,24 @@ class QuadraticModel:
         for i in range(self.number_of_observations):
             matrix.append([1])
             for j in range(self.number_of_parameters):
-                matrix[i].append(int(self.data_plan.at[i, self.column[j]]))
+                matrix[i].append(self.data_plan.at[i, self.column[j]])
 
             for j in range(self.number_of_parameters):
-                matrix[i].append(int(self.data_plan.at[i, self.column[j]] ** 2))
+                matrix[i].append(self.data_plan.at[i, self.column[j]] ** 2)
 
             for j in range(self.number_of_parameters):
                 for k in range(j+1, self.number_of_parameters):
-                    matrix[i].append(int(self.data_plan.at[i, self.column[j]] * self.data_plan.at[i, self.column[k]]))
+                    matrix[i].append(self.data_plan.at[i, self.column[j]] * self.data_plan.at[i, self.column[k]])
 
 
 
         self.planning_matrix = np.array(matrix)
-        self.coefficients_matrix = (np.linalg.inv(np.transpose(self.planning_matrix) @ self.planning_matrix)) @ np.transpose(self.planning_matrix) @ self.response_matrix
+        self.coefficients_matrix = np.linalg.lstsq(self.planning_matrix, self.response_matrix, rcond=None)[0]
         self.expected_response_matrix = self.planning_matrix @ self.coefficients_matrix
         self.residuals_matrix = np.subtract(self.response_matrix, self.expected_response_matrix)
         self.mean_response = np.mean(self.response_matrix)
+        
+        print(self.coefficients_matrix)
 
         self.SQR = np.sum(np.square(self.expected_response_matrix - self.mean_response))
         self.MQR = self.SQR / (self.number_of_coefficients - 1)
@@ -211,7 +213,7 @@ class QuadraticModel:
             current_line = no_response.loc[j]
             if not (current_line == reference_line).all():
                 reference_line = current_line
-                average_i[i] = sum_i[i] // number_i[i]  # Use // for integer division
+                average_i[i] = sum_i[i] / number_i[i]
                 sum_i.append(0)
                 number_i.append(0)
                 average_i.append(0)
@@ -293,28 +295,40 @@ class QuadraticModel:
         fig = plt.figure()
         print("Quadratic plot now")
         
-        if(self.number_of_parameters == 1):
-            x = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
-            y = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + (x**2)*self.coefficients_matrix[2]
+        if self.number_of_parameters == 1:
+            # Assuming the first parameter is the x-axis
+            x = np.linspace(np.floor(self.data_plan[self.column[0]].min()), 
+                            np.ceil(self.data_plan[self.column[0]].max()), 100)
+            # Calculate y using the model's coefficients
+            y = (self.coefficients_matrix[0] + 
+                x * self.coefficients_matrix[1] + 
+                (x**2) * self.coefficients_matrix[2])
 
             plt.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[-1]])
             plt.plot(x, y)
-            plt.xlabel(f"{self.column[0]}")
+            plt.xlabel(self.column[0])
             plt.ylabel(self.column[-1])
             plt.title(f"{self.column[-1]} em função de {self.column[0]}")
 
-        elif(self.number_of_parameters == 2):
-            x_lin = np.linspace(floor(self.data_plan[self.column[0]].min()), ceil(self.data_plan[self.column[0]].max()), 100)
-            y_lin = np.linspace(floor(self.data_plan[self.column[1]].min()), ceil(self.data_plan[self.column[1]].max()), 100)
+        elif self.number_of_parameters == 2:
+            # Define the ranges for plotting based on the actual data range
+            x_range = np.linspace(self.data_plan[self.column[0]].min(), self.data_plan[self.column[0]].max(), 100)
+            y_range = np.linspace(self.data_plan[self.column[1]].min(), self.data_plan[self.column[1]].max(), 100)
+            x_mesh, y_mesh = np.meshgrid(x_range, y_range)
 
-            x, y = np.meshgrid(x_lin, y_lin)
-            z = self.coefficients_matrix[0] + x*self.coefficients_matrix[1] + y*self.coefficients_matrix[2] + (x**2)*self.coefficients_matrix[3] + (y**2)*self.coefficients_matrix[4] + (x*y)*self.coefficients_matrix[5]
+            # Apply the model's coefficients to get the Z values for the surface plot
+            z_mesh = (self.coefficients_matrix[0] +
+                      self.coefficients_matrix[1] * x_mesh +
+                      self.coefficients_matrix[2] * y_mesh +
+                      self.coefficients_matrix[3] * x_mesh**2 +
+                      self.coefficients_matrix[4] * y_mesh**2 +
+                      self.coefficients_matrix[5] * x_mesh * y_mesh)
 
             ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[1]], self.data_plan[self.column[-1]])
-            ax.plot_surface(x, y, z, cmap='viridis')
-            ax.set_xlabel(f"{self.column[0]}")
-            ax.set_ylabel(f"{self.column[1]}")
+            ax.scatter(self.data_plan[self.column[0]], self.data_plan[self.column[1]], self.data_plan[self.column[-1]], color='r')
+            ax.plot_surface(x_mesh, y_mesh, z_mesh, cmap='viridis', alpha=0.7)
+            ax.set_xlabel(self.column[0])
+            ax.set_ylabel(self.column[1])
             ax.set_zlabel(self.column[-1])
             ax.set_title(f"{self.column[-1]} em função de {self.column[0]} e {self.column[1]}")
 
@@ -336,6 +350,7 @@ class QuadraticModel:
             cbar.set_label(self.column[-1])
             ax.set_title(f"{self.column[-1]} em função de {self.column[0]}, {self.column[1]} e {self.column[2]}")
         
+        plt.show()
         buf = io.BytesIO()
         FigureCanvas(fig).print_png(buf)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
@@ -374,13 +389,13 @@ def overall_f_test(model): #realiza o teste F (talvez seja melhor so devolver a 
         
     return return_string
 
-def optimal_point(model, optimization_type): #encontra o ponto ótimo do modelo
+def optimal_point(model, optimization_type = False): #encontra o ponto ótimo do modelo
     initial_point = []
     for i in range(model.number_of_parameters):
         initial_point.append(model.data_plan.at[0, model.column[i]])
 
     if(optimization_type):
-        minimize(lambda x: -model.expected_response(x), initial_point)
+        return minimize(lambda x: -model.expected_response(x), initial_point)
     else:
         return minimize(model.expected_response, initial_point)
 
@@ -412,6 +427,7 @@ def data_plan_plot(data_frame): #plota o gráfico dos dados coletados
         ax.set_zlabel(f"{column[2]}")
         cbar.set_label(column[-1])
         ax.set_title(f"{column[-1]} em função de {column[0]}, {column[1]} e {column[2]}")
+    
     
     buf = io.BytesIO()
     FigureCanvas(fig).print_png(buf)

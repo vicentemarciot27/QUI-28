@@ -13,7 +13,7 @@ const Modelagem = (props) => {
   const [maxPoint, setMaxPoint] = useState([]);
   const [anovaData, setAnovadata] = useState([]);
   const [fTable, setFTable] = useState([]);
-  const [fstring, setFstring] = useState()
+  const [fstring, setFstring] = useState();
 
   const handleButtonClick = () => {
     // Update the points state when the button is clicked
@@ -67,7 +67,7 @@ const Modelagem = (props) => {
         setMaxPoint(response.data.maxPoint);
         setAnovadata(response.data.anovaTable);
         setFTable(response.data.fTable);
-        setFstring(response.data.fstring)
+        setFstring(response.data.fstring);
       })
       .catch((error) => {
         console.error("There was an error processing the data:", error);
@@ -141,7 +141,12 @@ const Modelagem = (props) => {
           alt="Quadratic Plot"
         />
       )}
-      {maxPoint && <h3>O ponto de inflexão desejado é: {maxPoint}</h3>}
+      <h3>
+        O ponto de inflexão desejado é:{" "}
+        {maxPoint.map((point) => {
+          return <h3>{point}</h3>;
+        })}
+      </h3>
       {anovaData && (
         <div>
           <h2>ANOVA Table</h2>
@@ -189,10 +194,7 @@ const Modelagem = (props) => {
           </table>
         </div>
       )}
-      {
-        fstring
-      }
-
+      {fstring}
     </div>
   );
 };
