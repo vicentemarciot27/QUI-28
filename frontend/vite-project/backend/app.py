@@ -82,6 +82,14 @@ def submit_quadratic_model():
         
         #7 generate fstring
         fstring = overall_f_test(model)
+        
+        tabela_coeficientes = model.coefficients_table()
+        print(tabela_coeficientes)
+        
+        data_plot = data_plan_plot(df)
+        
+        residuals_parameters = residuals_expectations_plot(model)
+        
 
         # . Return the plot as a base64 encoded string in a JSON response
         return jsonify(
@@ -89,8 +97,12 @@ def submit_quadratic_model():
                 "fstring": fstring,
                 "fTable": ftable.to_dict(orient='records'),
                 "anovaTable": table_df.to_dict(orient='records'),
+                "tabela_coeficientes": tabela_coeficientes.to_dict(orient='records'),
                 "maxPoint": max_point_result,
                 "plot": plot_base64,
+                "data_plot": data_plot,
+                "residuals_parameters": residuals_parameters,
+                
             }
         )
 

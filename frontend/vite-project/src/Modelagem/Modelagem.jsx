@@ -14,6 +14,9 @@ const Modelagem = (props) => {
   const [anovaData, setAnovadata] = useState([]);
   const [fTable, setFTable] = useState([]);
   const [fstring, setFstring] = useState();
+  const [coefficientstable, setCoefficientsTable] = useState();
+  const [residuals_parameters, setResidualsParameters] = useState();
+  const [data_plot, setDataPlot] = useState();
 
   const handleButtonClick = () => {
     // Update the points state when the button is clicked
@@ -65,9 +68,13 @@ const Modelagem = (props) => {
       .then((response) => {
         setImageBase64(response.data.plot);
         setMaxPoint(response.data.maxPoint);
+        console.log(maxPoint)
         setAnovadata(response.data.anovaTable);
         setFTable(response.data.fTable);
         setFstring(response.data.fstring);
+        setCoefficientsTable(response.data.tabela_coeficientes);
+        setResidualsParameters(response.data.residuals_parameters);
+        setDataPlot(response.data.data_plot);
       })
       .catch((error) => {
         console.error("There was an error processing the data:", error);
@@ -88,7 +95,7 @@ const Modelagem = (props) => {
           <table>
             <thead>
               <tr>
-                {points.columns.map((column, idx) => (
+                {points.columns.slice(1).map((column, idx) => (
                   <th key={idx}>{column}</th>
                 ))}
               </tr>
@@ -96,7 +103,7 @@ const Modelagem = (props) => {
             <tbody>
               {points.data.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {row.map((cell, cellIndex) => (
+                  {row.slice(1).map((cell, cellIndex) => (
                     <td key={cellIndex}>{cell}</td>
                   ))}
                   <td>
@@ -133,7 +140,16 @@ const Modelagem = (props) => {
       <br />
       <button className="SendBtn" onClick={handleSendClick}>
         Processar dados
-      </button>
+      </button>.
+      {
+        data_plot && 
+        <img
+        src={`data:image/png;base64,${data_plot}`}
+        style={{ width: 550, padding: "1rem" }}
+        alt="Quadratic Plot"
+      />
+      }
+      
       {imageBase64 && (
         <img
           src={`data:image/png;base64,${imageBase64}`}
@@ -195,6 +211,39 @@ const Modelagem = (props) => {
         </div>
       )}
       {fstring}
+      {coefficientstable && (
+        <div>
+          <h2>Coefficients Table</h2>
+          <br />
+          <table  style={{margin: "auto"}}>
+            <thead>
+              <tr>
+                <th>Parâmetro Estatístico</th>
+                <th>Valor</th>
+                <th>Erros-Padrão</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coefficientstable.map((row, index) => (
+                <tr key={index}>
+                  <td>{row["Coeficiente"]}</td>
+                  <td>{row["Valor"]}</td>
+                  <td>{row["Erros-Padrão"]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {
+        residuals_parameters && 
+        <img
+        src={`data:image/png;base64,${residuals_parameters}`}
+        style={{ width: 550, padding: "1rem" }}
+        alt="Quadratic Plot"
+      />
+      }
+      
     </div>
   );
 };

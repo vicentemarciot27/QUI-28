@@ -163,7 +163,7 @@ function VariableForm(props) {
       </label> */}
       {state.variables.map((variable, index) => (
         <div className="InputsdeVar" key={index}>
-          <h2>Variable {index}:</h2>
+          <h2>Variable {index + 1}:</h2>
           <div>
             <label>
               Name: <br />

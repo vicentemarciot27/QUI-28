@@ -167,9 +167,9 @@ class QuadraticModel:
         self.number_of_observations = len(self.data_plan)
         self.number_of_parameters = len(self.column) - 1
         self.number_of_levels = self.data_plan[self.column[0]].nunique()
-        self.number_of_coefficients = int(1 + 2 * self.number_of_parameters + (self.number_of_parameters * (self.number_of_parameters - 1)) / 2)
+        self.number_of_coefficients = round(1 + 2 * self.number_of_parameters + (self.number_of_parameters * (self.number_of_parameters - 1)) / 2)
 
-        self.response_matrix = self.data_plan[self.column[-1]].values
+        self.response_matrix = np.array(self.data_plan[self.column[-1]].values)
 
         matrix = []
 
@@ -250,26 +250,34 @@ class QuadraticModel:
     def coefficients_table(self): 
         table = pd.DataFrame()
 
-        table["Coeficiente"] = [1]
+        table["Coeficiente"] = ["1"]
+        table["Valor"] = self.coefficients_matrix[0]
         i = 1
 
-        for j in range(self.number_of_coefficients):
-            table.loc[i, "Coeficiente"] = [f"X{j + 1}"]
+        for j in range(self.number_of_parameters):
+            table.loc[i, "Coeficiente"] = f"X{j + 1}"
+            table.loc[i, "Valor"] = self.coefficients_matrix[i]
             i += 1
 
-        for j in range(self.number_of_coefficients):
-            table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{j + 1}"]
+        for j in range(self.number_of_parameters):
+            table.loc[i, "Coeficiente"] = f"X{j + 1}*X{j + 1}"
+            table.loc[i, "Valor"] = self.coefficients_matrix[i]
             i += 1
 
         for j in range(self.number_of_parameters):
             for k in range(j+1, self.number_of_parameters):
-                table.loc[i, "Coeficiente"] = [f"X{j + 1}*X{k + 1}"]
+                table.loc[i, "Coeficiente"] = f"X{j + 1}*X{k + 1}"
+                table.loc[i, "Valor"] = self.coefficients_matrix[i]
                 i += 1
-
-        # Placeholder for standard errors (you need to calculate them)
-        table["Erros-Padrão"] = [0.0] * self.number_of_coefficients
+        
+        i = 0        
+                
+        while i < self.number_of_coefficients:
+            table.loc[i, "Erros-Padrão"] = sqrt(self.covariance_matrix[i][i])
+            i += 1
 
         return table
+
 
     
     def expected_response(self, point): #calcula resposta esperada pelo modelo para um ponto do dominio
@@ -350,7 +358,7 @@ class QuadraticModel:
             cbar.set_label(self.column[-1])
             ax.set_title(f"{self.column[-1]} em função de {self.column[0]}, {self.column[1]} e {self.column[2]}")
         
-        plt.show()
+        # plt.show()
         buf = io.BytesIO()
         FigureCanvas(fig).print_png(buf)
         return base64.b64encode(buf.getvalue()).decode('utf-8')
@@ -411,27 +419,23 @@ def data_plan_plot(data_frame): #plota o gráfico dos dados coletados
     fig = plt.figure()
     
     if(dimensions == 1):
-        plt.scatter(data_frame[column[0]], data_frame[column[-1]])
+        plt.scatter(data_frame[column[0]])
         plt.xlabel(f"{column[0]}")
-        plt.ylabel(column[-1])
         plt.title(f"{column[-1]} em função de {column[0]}")
 
     elif(dimensions == 2):
-        ax = fig.add_subplot(111, projection='3d')
-        ax.scatter(data_frame[column[0]], data_frame[column[1]], data_frame[column[-1]])
-        ax.set_xlabel(f"{column[0]}")
-        ax.set_ylabel(f"{column[1]}")
-        ax.set_zlabel(column[-1])
-        ax.set_title(f"{column[-1]} em função de {column[0]} e {column[1]}")
+        plt.scatter(data_frame[column[0]], data_frame[column[1]])
+        plt.xlabel(f"{column[0]}")
+        plt.ylabel(f"{column[1]}")
+        plt.title(f"{column[-1]} em função de {column[0]} e {column[1]}")
 
     elif(dimensions == 3):
         ax = fig.add_subplot(111, projection='3d')
-        scatter = ax.scatter(data_frame[column[0]], data_frame[column[1]], data_frame[column[2]], c=data_frame[column[-1]], cmap="viridis", marker="o")
+        scatter = ax.scatter(data_frame[column[0]], data_frame[column[1]], data_frame[column[2]], cmap="viridis", marker="o")
         cbar = plt.colorbar(scatter)
         ax.set_xlabel(f"{column[0]}")
         ax.set_ylabel(f"{column[1]}")
         ax.set_zlabel(f"{column[2]}")
-        cbar.set_label(column[-1])
         ax.set_title(f"{column[-1]} em função de {column[0]}, {column[1]} e {column[2]}")
     
     
@@ -453,8 +457,10 @@ def residuals_expectations_plot(model): #plota o gráfico dos resíduos pela res
 def residuals_parameters_plot(model): #cria grid de gráficos dos resíduos por cada parâmetro
     fig, axs = plt.subplots(ceil(sqrt(model.number_of_parameters)), ceil(sqrt(model.number_of_parameters)), figsize=(10, 4))
 
+    print(model.residuals_matrix)
+    print(model.data_plan[model.column[0]].tolist())
     for i in range(model.number_of_parameters):
-        axs[i].scatter(model.data_plan[model.column[i]], model.residuals_matrix)
+        axs[i].scatter(model.data_plan[model.column[i]].tolist(), model.residuals_matrix.tolist())
         axs[i].set_xlabel(f"{model.column[i]}")
         axs[i].set_ylabel("Resíduos")
         axs[i].set_title(f"Resíduos em função de {model.column[i]}")
