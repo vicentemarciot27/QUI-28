@@ -140,7 +140,7 @@ const Modelagem = (props) => {
       <br />
       <button className="SendBtn" onClick={handleSendClick}>
         Processar dados
-      </button>.
+      </button>
       {
         data_plot && 
         <img
@@ -159,8 +159,8 @@ const Modelagem = (props) => {
       )}
       <h3>
         O ponto de inflexão desejado é:{" "}
-        {maxPoint.map((point) => {
-          return <h3>{point}</h3>;
+        {maxPoint && maxPoint.map((point) => {
+          return <h3>{point.toPrecision(4)}</h3>;
         })}
       </h3>
       {anovaData && (
@@ -179,9 +179,9 @@ const Modelagem = (props) => {
               {anovaData.map((row, index) => (
                 <tr key={index}>
                   <td>{row["Fonte de Variação"]}</td>
-                  <td>{row["Soma Quadrática"]}</td>
-                  <td>{row["Número de Graus de Liberdade"]}</td>
-                  <td>{row["Média Quadrática"]}</td>
+                  <td>{Number(row["Soma Quadrática"]).toFixed(3)}</td>
+                  <td>{Number(row["Número de Graus de Liberdade"])}</td>
+                  <td>{Number(row["Média Quadrática"]).toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
@@ -203,7 +203,7 @@ const Modelagem = (props) => {
               {fTable.map((row, index) => (
                 <tr key={index}>
                   <td>{row["Parâmetro Estatístico"]}</td>
-                  <td>{row["Valor"]}</td>
+                  <td>{Number(row["Valor"]).toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
@@ -227,8 +227,8 @@ const Modelagem = (props) => {
               {coefficientstable.map((row, index) => (
                 <tr key={index}>
                   <td>{row["Coeficiente"]}</td>
-                  <td>{row["Valor"]}</td>
-                  <td>{row["Erros-Padrão"]}</td>
+                  <td>{Number(row["Valor"]).toFixed(3)}</td>
+                  <td>{Number(row["Erros-Padrão"]).toFixed(3)}</td>
                 </tr>
               ))}
             </tbody>
